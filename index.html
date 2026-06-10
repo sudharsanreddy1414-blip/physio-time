@@ -1271,7 +1271,7 @@ var SHEETS_URL = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL';
 ══════════════════════════════════════════════════════ */
 // ── Firebase Auth — all login/logout handled by Firebase ──
 var AUTH_KEY = 'ptc_auth';
-var ADMIN_EMAIL = 'dillybabu107@gmail.com'; // only this email can log in
+var ADMIN_EMAIL = 'Under process'; // only this email can log in
 
 var patientCache = [];   // in-memory cache for fast search/filter
 var editingId    = null;
@@ -1492,7 +1492,7 @@ function showLogin() {
     '<p class="adm-login-sub">Staff Portal — Secure Login</p>' +
     '<div id="adm-login-err" class="adm-login-err" style="display:none"></div>' +
     '<div class="adm-field-group"><label class="adm-label">Email</label>' +
-    '<input id="adm-email" class="adm-input" type="email" placeholder="dillybabu107@gmail.com" autocomplete="email" value="dillybabu107@gmail.com"/></div>' +
+    '<input id="adm-email" class="adm-input" type="email" placeholder="Under process" autocomplete="email" value="Under process"/></div>' +
     '<div class="adm-field-group"><label class="adm-label">Password</label>' +
     '<input id="adm-pwd" class="adm-input" type="password" placeholder="••••••••" autocomplete="current-password"/></div>' +
     '<button class="adm-btn-primary" style="width:100%;margin-top:8px;justify-content:center" onclick="doLogin()" id="login-btn">Login →</button>' +
@@ -1590,7 +1590,7 @@ function doForgotPassword() {
         msg.style.background='#eff6ff';
         msg.style.border='1px solid #93c5fd';
         msg.style.color='#1e3a8a';
-        msg.innerHTML='✅ Reset link sent to <strong>dillybabu107@gmail.com</strong><br><small>Check your inbox (and spam folder).</small>';
+        msg.innerHTML='✅ Reset link sent to <strong>Under process</strong><br><small>Check your inbox (and spam folder).</small>';
       }
       if(btn){ btn.textContent='✅ Sent!'; }
       setTimeout(showLogin, 4000);

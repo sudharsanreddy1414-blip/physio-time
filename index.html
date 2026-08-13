@@ -1952,7 +1952,10 @@ window.PT=(function(){
     }
     save();clrForm();fillSels();dash();
     pushSheets('patient',p);
-    toast('✅ Patient saved!');
+    toast('✅ Patient saved — opening assessment form…');
+    pg('assessment',null);
+    var e=document.getElementById('asmtP');
+    if(e){e.value=p.id;fillAsmt();}
   }
   function clrForm(){
     ['pnN','pnA','pnPh','pnAd','pnOc','pnCo','pnDt','pnBp','pnCmp','pnNt'].forEach(function(id){

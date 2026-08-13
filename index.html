@@ -696,6 +696,8 @@ footer strong{color:rgba(255,255,255,.8)}
 .pt-toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 .pt-srch{padding:.54rem .82rem;border:1.5px solid var(--border);border-radius:8px;font-size:.8rem;font-family:var(--body);outline:none;min-width:190px;background:var(--white);color:var(--text)}
 .pt-srch:focus{border-color:var(--b600)}
+.pt-select{padding:.54rem .7rem;border:1.5px solid var(--border);border-radius:8px;font-size:.8rem;font-family:var(--body);outline:none;background:var(--white);color:var(--text);cursor:pointer}
+.pt-select:focus{border-color:var(--b600)}
 .pt-empty{text-align:center;padding:2.2rem 1rem;color:var(--muted)}
 .pt-empty .ee{font-size:2.2rem;margin-bottom:.5rem}
 
@@ -1370,6 +1372,8 @@ footer strong{color:rgba(255,255,255,.8)}
               <button class="pt-nitem" onclick="PT.pg('assessment',this)"><span class="ic">📋</span>Assessment</button>
             </nav>
             <div class="pt-sb-foot">
+              <button class="pt-fi" onclick="PT.pg('sheetsSetup',this)"><span>⚙️</span>Sheets Setup</button>
+              <button class="pt-fi" onclick="window.open('/', '_blank')"><span>🌐</span>View Website</button>
               <button class="pt-fi logout" onclick="PT.logout()"><span>🚪</span>Logout</button>
             </div>
           </aside>
@@ -1377,7 +1381,7 @@ footer strong{color:rgba(255,255,255,.8)}
             <div class="pt-mbar">
               <h2 id="ptTitle">Dashboard</h2>
               <div class="pt-mbar-r">
-                <div class="pt-cpill"><span class="pt-cdot"></span>Active</div>
+                <div class="pt-cpill" id="ptConnPill"><span class="pt-cdot"></span>Local Only</div>
                 <div class="pt-upill">👨‍⚕️ Dr. Gobinath S</div>
               </div>
             </div>
@@ -1403,9 +1407,22 @@ footer strong{color:rgba(255,255,255,.8)}
               </div>
               <!-- PATIENTS PAGE -->
               <div class="pt-page" id="ptPg-patients">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.88rem;flex-wrap:wrap;gap:.6rem">
-                  <input class="pt-srch" id="ptSrch" placeholder="🔍 Search patients…" oninput="PT.renderPats()"/>
-                  <button class="ptbtn ptbtn-p" onclick="PT.pg('addPatient',null)">➕ Add Patient</button>
+                <div class="pt-card" style="margin-bottom:.88rem">
+                  <div class="pt-card-hd"><h3>👥 Patients (<span id="patsCount">0</span>)</h3></div>
+                  <div class="pt-card-bd" style="display:flex;flex-direction:column;gap:.6rem">
+                    <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+                      <input class="pt-srch" id="ptSrch" style="flex:1;min-width:200px" placeholder="🔍 Search name, phone, condition…" oninput="PT.renderPats()"/>
+                      <select class="pt-select" id="ptGenderF" onchange="PT.renderPats()">
+                        <option value="">All Genders</option>
+                        <option>Male</option><option>Female</option><option>Other</option>
+                      </select>
+                    </div>
+                    <button class="ptbtn ptbtn-p" style="width:100%" onclick="PT.pg('addPatient',null)">➕ Add Patient</button>
+                    <div style="display:flex;gap:.6rem">
+                      <button class="ptbtn ptbtn-o" style="flex:1" onclick="PT.pullSheets()">🔄 Refresh</button>
+                      <button class="ptbtn ptbtn-o" style="flex:1" onclick="PT.csv()">📥 CSV</button>
+                    </div>
+                  </div>
                 </div>
                 <div class="pt-card"><div id="patsT" style="padding:0"></div></div>
               </div>
@@ -1438,11 +1455,19 @@ footer strong{color:rgba(255,255,255,.8)}
               </div>
               <!-- APPOINTMENTS PAGE -->
               <div class="pt-page" id="ptPg-appointments">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.88rem;flex-wrap:wrap;gap:.6rem">
-                  <span style="font-size:.8rem;color:var(--muted)">All appointments</span>
-                  <button class="ptbtn ptbtn-p" onclick="PT.openAppt()">➕ Book Appointment</button>
+                <div class="pt-card" style="margin-bottom:.95rem">
+                  <div class="pt-card-hd"><h3>📅 Upcoming Appointments (<span id="apUpCount">0</span>)</h3>
+                    <div style="display:flex;gap:.4rem">
+                      <button class="ptbtn ptbtn-o" style="font-size:.65rem;padding:.28rem .6rem" onclick="PT.pullSheets()">🔄 Refresh</button>
+                      <button class="ptbtn ptbtn-p" style="font-size:.65rem;padding:.28rem .6rem" onclick="PT.openAppt()">➕ Book</button>
+                    </div>
+                  </div>
+                  <div class="pt-card-bd" id="apUpT"></div>
                 </div>
-                <div class="pt-card"><div id="apptsT" style="padding:0"></div></div>
+                <div class="pt-card">
+                  <div class="pt-card-hd"><h3>🕐 Past Appointments (recent 10)</h3></div>
+                  <div id="apPastT" style="padding:0"></div>
+                </div>
               </div>
               <!-- ASSESSMENT PAGE -->
               <div class="pt-page" id="ptPg-assessment">
@@ -1546,6 +1571,30 @@ footer strong{color:rgba(255,255,255,.8)}
                     </div>
                   </div>
                 </div></div>
+              </div>
+              <!-- SHEETS SETUP PAGE -->
+              <div class="pt-page" id="ptPg-sheetsSetup">
+                <div class="pt-card">
+                  <div class="pt-card-hd"><h3>⚙️ Google Sheets Sync</h3></div>
+                  <div class="pt-card-bd">
+                    <p style="font-size:.78rem;color:var(--muted);line-height:1.6;margin-bottom:.9rem">Connect this portal to a Google Sheet so patients, appointments and assessments sync to a live spreadsheet — across devices, viewable/editable directly in Sheets. Requires a small free Google Apps Script deployed on your own Google account (download the script below, paste into Apps Script, deploy as Web App, paste the URL here).</p>
+                    <div class="pt-f pt-full"><label>Apps Script Web App URL</label><input id="shUrl" placeholder="https://script.google.com/macros/s/XXXXX/exec"/></div>
+                    <div style="display:flex;gap:.6rem;margin-top:.7rem;flex-wrap:wrap">
+                      <button class="ptbtn ptbtn-p" onclick="PT.testSheets()">🔗 Connect & Test</button>
+                      <button class="ptbtn ptbtn-o" onclick="PT.disconnectSheets()">Disconnect</button>
+                    </div>
+                    <div id="shStatus" style="font-size:.75rem;margin-top:.7rem;font-weight:600"></div>
+                    <div class="pt-sec-lbl" style="margin-top:1.2rem">Setup Steps</div>
+                    <ol style="font-size:.76rem;color:var(--text);line-height:1.9;padding-left:1.1rem;margin-top:.4rem">
+                      <li>Create a new Google Sheet (or use an existing one).</li>
+                      <li>In the Sheet, go to Extensions → Apps Script.</li>
+                      <li>Delete any starter code and paste in the script (download below).</li>
+                      <li>Click Deploy → New deployment → type "Web app". Set "Execute as: Me" and "Who has access: Anyone".</li>
+                      <li>Click Deploy, authorize access, then copy the Web App URL.</li>
+                      <li>Paste that URL above and click Connect & Test.</li>
+                    </ol>
+                  </div>
+                </div>
               </div>
             </div><!-- /pt-content -->
           </div><!-- /pt-main -->
@@ -1693,6 +1742,61 @@ window.PT=(function(){
   function ss(k,v){localStorage.setItem(k,JSON.stringify(v))}
   function load(){pats=ls('pt5_p');appts=ls('pt5_a');asmts=ls('pt5_s')}
   function save(){ss('pt5_p',pats);ss('pt5_a',appts);ss('pt5_s',asmts)}
+  var SHEETS_KEY='pt5_sheetsUrl';
+  function sheetsUrl(){return localStorage.getItem(SHEETS_KEY)||''}
+  function setSheetsUrl(u){localStorage.setItem(SHEETS_KEY,u)}
+  function updateConnPill(){
+    var pill=document.getElementById('ptConnPill');if(!pill)return;
+    var u=sheetsUrl();
+    if(u){
+      pill.innerHTML='<span class="pt-cdot"></span>Sheets Connected';
+      pill.style.background='rgba(34,197,94,.1)';pill.style.color='#16a34a';pill.style.borderColor='rgba(34,197,94,.25)';
+    } else {
+      pill.innerHTML='<span class="pt-cdot" style="background:#94a3b8;animation:none"></span>Local Only';
+      pill.style.background='rgba(148,163,184,.12)';pill.style.color='#64748b';pill.style.borderColor='rgba(148,163,184,.3)';
+    }
+  }
+  function testSheets(){
+    var u=(document.getElementById('shUrl').value||'').trim();
+    var st=document.getElementById('shStatus');
+    if(!u){st.textContent='❌ Enter a Web App URL first';st.style.color='#dc2626';return;}
+    st.textContent='Testing connection…';st.style.color='var(--muted)';
+    fetch(u+'?action=ping').then(function(r){return r.json()}).then(function(j){
+      if(j&&j.ok){
+        setSheetsUrl(u);updateConnPill();
+        st.textContent='✅ Connected successfully! Use Refresh on Patients/Appointments to pull data.';st.style.color='#16a34a';
+        toast('✅ Google Sheets connected');
+      } else {
+        st.textContent='❌ Unexpected response from script';st.style.color='#dc2626';
+      }
+    }).catch(function(e){
+      st.textContent='❌ Could not connect — check the URL and deployment settings ('+e.message+')';st.style.color='#dc2626';
+    });
+  }
+  function disconnectSheets(){
+    localStorage.removeItem(SHEETS_KEY);updateConnPill();
+    var u=document.getElementById('shUrl');if(u)u.value='';
+    var st=document.getElementById('shStatus');if(st){st.textContent='Disconnected — data now saves locally only';st.style.color='var(--muted)';}
+    toast('Disconnected from Sheets');
+  }
+  function pushSheets(type,record){
+    var u=sheetsUrl();if(!u)return;
+    fetch(u,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'push',type:type,record:record})}).catch(function(){});
+  }
+  function pullSheets(){
+    var u=sheetsUrl();
+    if(!u){toast('No Sheets connected — showing local data');dash();renderPats();renderAppts();return;}
+    toast('🔄 Syncing from Sheets…');
+    fetch(u+'?action=pull').then(function(r){return r.json()}).then(function(j){
+      if(j&&j.patients){
+        pats=j.patients||[];appts=j.appointments||[];asmts=j.assessments||[];
+        save();dash();renderPats();renderAppts();fillSels();
+        toast('✅ Synced from Sheets');
+      } else {
+        toast('❌ Unexpected data from Sheets');
+      }
+    }).catch(function(e){toast('❌ Sync failed: '+e.message)});
+  }
 
   function open(){
     load();
@@ -1702,7 +1806,7 @@ window.PT=(function(){
     var d=td();
     var e=document.getElementById('asDt');if(e&&!e.value)e.value=d;
     var f=document.getElementById('apDt');if(f&&!f.value)f.value=d;
-    dash();fillSels();
+    dash();fillSels();updateConnPill();
   }
   function close(){
     document.getElementById('ptOverlay').classList.remove('open');
@@ -1749,12 +1853,13 @@ window.PT=(function(){
     document.querySelectorAll('.pt-nitem').forEach(function(b){b.classList.remove('active')});
     var p=document.getElementById('ptPg-'+id);if(p)p.classList.add('active');
     if(btn)btn.classList.add('active');
-    var tt={dashboard:'Dashboard',patients:'Patients',addPatient:'Add Patient',appointments:'Appointments',assessment:'Assessment'};
+    var tt={dashboard:'Dashboard',patients:'Patients',addPatient:'Add Patient',appointments:'Appointments',assessment:'Assessment',sheetsSetup:'Sheets Setup'};
     var t=document.getElementById('ptTitle');if(t)t.textContent=tt[id]||id;
     if(id==='patients')renderPats();
     if(id==='appointments')renderAppts();
     if(id==='dashboard')dash();
     if(id==='assessment'){fillSels();var e=document.getElementById('asDt');if(e&&!e.value)e.value=td();}
+    if(id==='sheetsSetup'){var u=document.getElementById('shUrl');if(u)u.value=sheetsUrl();}
   }
   function dash(){
     var t=td();
@@ -1767,7 +1872,7 @@ window.PT=(function(){
 
     var rp=document.getElementById('dPats');
     if(!pats.length){
-      rp.innerHTML='<div class="pt-empty"><div class="ee">👥<\/div><p>No patients yet<\/p><\/div>';
+      rp.innerHTML='<div class="pt-empty"><div class="ee">👥<\/div><p>No patients yet.<\/p><button class="ptbtn ptbtn-p" style="margin-top:.6rem" onclick="PT.pg(\'addPatient\',null)">➕ Add First Patient<\/button><\/div>';
     } else {
       var rows='';
       pats.slice(0,5).forEach(function(p){
@@ -1846,6 +1951,7 @@ window.PT=(function(){
       appts.unshift({id:Date.now()+1,patientId:p.id,patientName:p.name,condition:p.condition,phone:p.phone,date:p.appointment,time:'—',notes:''});
     }
     save();clrForm();fillSels();dash();
+    pushSheets('patient',p);
     toast('✅ Patient saved!');
   }
   function clrForm(){
@@ -1858,25 +1964,30 @@ window.PT=(function(){
   }
   function renderPats(){
     var q=(document.getElementById('ptSrch')||{value:''}).value.toLowerCase();
+    var gf=(document.getElementById('ptGenderF')||{value:''}).value;
     var f=pats.filter(function(p){
-      return p.name.toLowerCase().includes(q)||p.phone.includes(q)||(p.condition||'').toLowerCase().includes(q);
+      var m=p.name.toLowerCase().includes(q)||p.phone.includes(q)||(p.condition||'').toLowerCase().includes(q);
+      var g=!gf||p.gender===gf;
+      return m&&g;
     });
+    var cEl=document.getElementById('patsCount');if(cEl)cEl.textContent=pats.length;
     var el=document.getElementById('patsT');
     if(!f.length){el.innerHTML='<div class="pt-empty"><div class="ee">👥<\/div><p>No patients found<\/p><\/div>';return;}
-    var tbl='<table class="pt-tbl"><thead><tr><th>Patient<\/th><th>Age/Gender<\/th><th>Phone<\/th><th>Condition<\/th><th>Appt<\/th><th>Actions<\/th><\/tr><\/thead><tbody>';
+    var tbl='<table class="pt-tbl"><thead><tr><th>#<\/th><th>Patient<\/th><th>Age/Gender<\/th><th>Phone<\/th><th>Condition<\/th><th>Actions<\/th><\/tr><\/thead><tbody>';
     f.forEach(function(p){
+      var i=pats.indexOf(p);
       tbl+='<tr>'
+        +'<td style="color:var(--muted)">'+(i+1)+'<\/td>'
         +'<td><div style="display:flex;align-items:center;gap:.55rem">'
         +'<div class="pt-pav" style="width:28px;height:28px;font-size:.65rem">'+ini(p.name)+'<\/div>'
         +'<div><div style="font-weight:600">'+esc(p.name)+'<\/div>'
-        +'<div style="font-size:.64rem;color:var(--muted)">'+fd(p.createdAt)+'<\/div><\/div><\/div><\/td>'
+        +'<div style="font-size:.64rem;color:var(--muted);max-width:220px">'+esc(p.address||'')+'<\/div><\/div><\/div><\/td>'
         +'<td>'+esc(p.age||'—')+' / '+esc(p.gender||'—')+'<\/td>'
         +'<td><a href="tel:'+p.phone+'" style="color:var(--b600);text-decoration:none">'+esc(p.phone)+'<\/a><\/td>'
         +'<td><span class="pt-bdg '+cb(p.condition)+'">'+esc(p.condition||'—')+'<\/span><\/td>'
-        +'<td>'+fd(p.appointment)+'<\/td>'
         +'<td style="display:flex;gap:.3rem;flex-wrap:wrap">'
-        +'<button class="ptbtn ptbtn-o" style="font-size:.65rem;padding:.24rem .56rem" onclick="PT.viewPat('+pats.indexOf(p)+')">View<\/button>'
-        +'<button class="ptbtn ptbtn-r" style="font-size:.65rem;padding:.24rem .56rem" onclick="PT.delPat('+pats.indexOf(p)+')">Del<\/button>'
+        +'<button class="ptbtn ptbtn-o" style="font-size:.65rem;padding:.24rem .56rem" onclick="PT.viewPat('+i+')">View<\/button>'
+        +'<button class="ptbtn ptbtn-r" style="font-size:.65rem;padding:.24rem .56rem" onclick="PT.delPat('+i+')">Del<\/button>'
         +'<\/td><\/tr>';
     });
     tbl+='<\/tbody><\/table>';
@@ -1949,27 +2060,69 @@ window.PT=(function(){
     if(!date){toast('❌ Select a date');return;}
     if(!selSlot){toast('❌ Select a time slot');return;}
     var pat=pats.find(function(p){return p.id==pid});
-    appts.unshift({id:Date.now(),patientId:pid,patientName:pat?pat.name:'Unknown',condition:pat?pat.condition:'—',phone:pat?pat.phone:'—',date:date,time:selSlot,notes:document.getElementById('apNt').value});
+    var a={id:Date.now(),patientId:pid,patientName:pat?pat.name:'Unknown',condition:pat?pat.condition:'—',phone:pat?pat.phone:'—',date:date,time:selSlot,notes:document.getElementById('apNt').value};
+    appts.unshift(a);
     save();closeMdl('apptMdl');renderAppts();dash();
+    pushSheets('appointment',a);
     toast('✅ Booked – '+fd(date)+' at '+selSlot);
   }
   function renderAppts(){
-    var el=document.getElementById('apptsT');
-    if(!appts.length){el.innerHTML='<div class="pt-empty"><div class="ee">📅<\/div><p>No appointments yet<\/p><\/div>';return;}
-    var s=[].concat(appts).sort(function(a,b){return a.date<b.date?-1:1});
-    var tbl='<table class="pt-tbl"><thead><tr><th>Patient<\/th><th>Condition<\/th><th>Phone<\/th><th>Date<\/th><th>Time<\/th><th>Actions<\/th><\/tr><\/thead><tbody>';
-    s.forEach(function(a){
-      tbl+='<tr>'
-        +'<td style="font-weight:600">'+esc(a.patientName)+'<\/td>'
-        +'<td><span class="pt-bdg '+cb(a.condition)+'">'+esc(a.condition)+'<\/span><\/td>'
-        +'<td><a href="tel:'+a.phone+'" style="color:var(--b600);text-decoration:none">'+esc(a.phone)+'<\/a><\/td>'
-        +'<td>'+fd(a.date)+'<\/td>'
-        +'<td>'+esc(a.time||'—')+'<\/td>'
-        +'<td><button class="ptbtn ptbtn-r" style="font-size:.65rem;padding:.24rem .56rem" onclick="PT.delAppt('+a.id+')">Cancel<\/button><\/td>'
-        +'<\/tr>';
-    });
-    tbl+='<\/tbody><\/table>';
-    el.innerHTML=tbl;
+    var t=td();
+    var up=[].concat(appts).filter(function(a){return a.date>=t}).sort(function(a,b){return a.date<b.date?-1:1});
+    var past=[].concat(appts).filter(function(a){return a.date<t}).sort(function(a,b){return a.date<b.date?1:-1}).slice(0,10);
+    var cEl=document.getElementById('apUpCount');if(cEl)cEl.textContent=up.length;
+    var upEl=document.getElementById('apUpT');
+    if(!up.length){
+      upEl.innerHTML='<div class="pt-empty"><div class="ee">📅<\/div><p>No upcoming appointments<\/p><\/div>';
+    } else {
+      var tbl1='<table class="pt-tbl"><thead><tr><th>Patient<\/th><th>Condition<\/th><th>Phone<\/th><th>Date<\/th><th>Time<\/th><th>Actions<\/th><\/tr><\/thead><tbody>';
+      up.forEach(function(a){
+        tbl1+='<tr>'
+          +'<td style="font-weight:600">'+esc(a.patientName)+'<\/td>'
+          +'<td><span class="pt-bdg '+cb(a.condition)+'">'+esc(a.condition)+'<\/span><\/td>'
+          +'<td><a href="tel:'+a.phone+'" style="color:var(--b600);text-decoration:none">'+esc(a.phone)+'<\/a><\/td>'
+          +'<td>'+fd(a.date)+'<\/td>'
+          +'<td>'+esc(a.time||'—')+'<\/td>'
+          +'<td style="display:flex;gap:.3rem;flex-wrap:wrap">'
+          +'<button class="ptbtn ptbtn-o" style="font-size:.65rem;padding:.24rem .56rem" onclick="PT.remindAppt('+a.id+')">💬 Remind<\/button>'
+          +'<button class="ptbtn ptbtn-r" style="font-size:.65rem;padding:.24rem .56rem" onclick="PT.delAppt('+a.id+')">Cancel<\/button>'
+          +'<\/td><\/tr>';
+      });
+      tbl1+='<\/tbody><\/table>';
+      upEl.innerHTML=tbl1;
+    }
+    var pastEl=document.getElementById('apPastT');
+    if(!past.length){
+      pastEl.innerHTML='<div class="pt-empty"><div class="ee">🕐<\/div><p>No past appointments<\/p><\/div>';
+    } else {
+      var tbl2='<table class="pt-tbl"><thead><tr><th>Patient<\/th><th>Condition<\/th><th>Date<\/th><th>Status<\/th><th>Actions<\/th><\/tr><\/thead><tbody>';
+      past.forEach(function(a){
+        tbl2+='<tr>'
+          +'<td style="font-weight:600">'+esc(a.patientName)+'<div style="font-size:.64rem;color:var(--muted);font-weight:400">'+esc(a.phone||'')+'<\/div><\/td>'
+          +'<td>'+esc(a.condition||'—')+'<\/td>'
+          +'<td>'+fd(a.date)+'<\/td>'
+          +'<td><span style="background:#fee2e2;color:#dc2626;padding:.16rem .52rem;border-radius:50px;font-size:.66rem;font-weight:600">Past<\/span><\/td>'
+          +'<td style="display:flex;gap:.3rem;flex-wrap:wrap">'
+          +'<button class="ptbtn ptbtn-o" style="font-size:.65rem;padding:.24rem .56rem" onclick="PT.remindAppt('+a.id+')">💬 Remind<\/button>'
+          +'<button class="ptbtn ptbtn-o" style="font-size:.65rem;padding:.24rem .56rem" onclick="PT.viewApptPat('+a.id+')">👁️ View<\/button>'
+          +'<\/td><\/tr>';
+      });
+      tbl2+='<\/tbody><\/table>';
+      pastEl.innerHTML=tbl2;
+    }
+  }
+  function remindAppt(id){
+    var a=appts.find(function(x){return x.id===id});
+    if(!a){toast('Not found');return;}
+    var msg=encodeURIComponent('Hi '+a.patientName+', this is a reminder from Physio Time Rehabilitation Centre for your appointment on '+fd(a.date)+(a.time&&a.time!=='—'?' at '+a.time:'')+'. Call 80988 89505 for any queries.');
+    window.open('https://wa.me/91'+String(a.phone||'').replace(/\D/g,'')+'?text='+msg,'_blank');
+  }
+  function viewApptPat(id){
+    var a=appts.find(function(x){return x.id===id});
+    if(!a)return;
+    var idx=pats.findIndex(function(p){return p.id==a.patientId});
+    if(idx>-1){pg('patients',null);viewPat(idx);}
+    else toast('Patient record not found');
   }
   function delAppt(id){
     if(!confirm('Cancel?'))return;
@@ -2060,7 +2213,7 @@ window.PT=(function(){
       followup:document.getElementById('asFu').value,
       savedAt:new Date().toISOString()
     };
-    asmts.unshift(a);save();toast('✅ Assessment saved for '+name);
+    asmts.unshift(a);save();pushSheets('assessment',a);toast('✅ Assessment saved for '+name);
   }
   function clrAsmt(){
     ['asN','asA','asAd','asOc','asBp','asCmp','asPh','asSi','asDr','asAg','asRl','asRst','asInv','asDx','asWo','asTo','asStr','asStg','asMod','asFu'].forEach(function(id){
@@ -2159,7 +2312,7 @@ window.PT=(function(){
   }
   var _ptP=document.getElementById('ptP');if(_ptP)_ptP.addEventListener('keydown',function(e){if(e.key==='Enter')login();});
   document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
-  return{open:open,close:close,login:login,logout:logout,pg:pg,dash:dash,addPat:addPat,clrForm:clrForm,renderPats:renderPats,viewPat:viewPat,delPat:delPat,goAsmt:goAsmt,fillSels:fillSels,openAppt:openAppt,selS:selS,bookAppt:bookAppt,renderAppts:renderAppts,delAppt:delAppt,fillAsmt:fillAsmt,swTab:swTab,setPain:setPain,saveAsmt:saveAsmt,clrAsmt:clrAsmt,printAsmt:printAsmt,closeMdl:closeMdl,csv:csv};
+  return{open:open,close:close,login:login,logout:logout,pg:pg,dash:dash,addPat:addPat,clrForm:clrForm,renderPats:renderPats,viewPat:viewPat,delPat:delPat,goAsmt:goAsmt,fillSels:fillSels,openAppt:openAppt,selS:selS,bookAppt:bookAppt,renderAppts:renderAppts,delAppt:delAppt,remindAppt:remindAppt,viewApptPat:viewApptPat,fillAsmt:fillAsmt,swTab:swTab,setPain:setPain,saveAsmt:saveAsmt,clrAsmt:clrAsmt,printAsmt:printAsmt,closeMdl:closeMdl,csv:csv,testSheets:testSheets,disconnectSheets:disconnectSheets,pullSheets:pullSheets};
 })();
 
 </script>

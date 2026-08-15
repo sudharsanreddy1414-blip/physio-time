@@ -1729,7 +1729,7 @@ footer strong{color:rgba(255,255,255,.8)}
     <div class="pt-mbd" id="patMdlB"></div>
     <div class="pt-mft">
       <button class="ptbtn ptbtn-o" onclick="PT.closeMdl('patMdl')">Close</button>
-      <button class="ptbtn ptbtn-p" onclick="PT.goAsmt()">📋 Assessment</button>
+      <button class="ptbtn ptbtn-p" onclick="PT.printPatAsmt()">🖨️ Print Assessment</button>
     </div>
   </div>
 </div>
@@ -2074,9 +2074,13 @@ window.PT=(function(){
       weakMuscles:document.getElementById('npWeak').value,
       tightMuscles:document.getElementById('npTight').value,
       painScore:document.getElementById('npPainSlider').value,
+      painArea:document.getElementById('npPainArea').value,
       stretch:document.getElementById('npLen').value,
       strengthen:document.getElementById('npStg').value,
       modalities:document.getElementById('npMod').value,
+      amount:document.getElementById('npAmt').value,
+      payMode:document.getElementById('npPayMode').value,
+      payStatus:document.getElementById('npPayStatus').value,
       therapist:'Dr. Gobinath S',
       date:visit,
       followup:document.getElementById('npNext').value,
@@ -2213,11 +2217,13 @@ window.PT=(function(){
         +r('Pain Score',a.painScore+' / 10')
         +(a.restricted?r('Restricted Activities',a.restricted,true):'')
         +(a.diagnosis?r('Diagnosis',a.diagnosis):'')
+        +(a.painArea?r('Pain Area',a.painArea):'')
         +(a.investigations?r('Investigations',a.investigations,true):'')
         +(a.stretch?r('Lengthening Exercises',a.stretch,true):'')
         +(a.strengthen?r('Strengthening Exercises',a.strengthen,true):'')
         +(a.modalities?r('Modalities',a.modalities,true):'')
         +r('Visit Date',fd(a.date))+(a.followup?r('Next Appointment',fd(a.followup)):'')
+        +(a.amount?r('Amount',' ₹'+a.amount):'')+(a.payMode?r('Payment Mode',a.payMode):'')+(a.payStatus?r('Payment Status',a.payStatus):'')
         +'<\/div><\/div>';
     }
     document.getElementById('patMdlB').innerHTML=html;
@@ -2233,6 +2239,58 @@ window.PT=(function(){
       var e=document.getElementById('asmtP');
       if(e){e.value=pats[vIdx]?pats[vIdx].id:'';fillAsmt();}
     }
+  }
+  function printPatAsmt(){
+    if(vIdx===null){toast('No patient selected');return;}
+    var p=pats[vIdx];
+    var a=asmts.filter(function(x){return x.patientId==p.id}).sort(function(x,y){return (y.savedAt||'')<(x.savedAt||'')?-1:1})[0];
+    if(!a){toast('No saved assessment for this patient');return;}
+    var w=window.open('','_blank');
+    if(!w)return;
+    function row(l,v){return '<div class="f"><div class="lbl">'+l+'<\/div><div class="val">'+esc(String(v||'—'))+'<\/div><\/div>';}
+    var content='<!DOCTYPE html><html><head><title>Assessment - '+esc(p.name)+'<\/title>'
+      +'<style>body{font-family:Arial,sans-serif;padding:2rem;color:#111;font-size:13px}'
+      +'.row{display:flex;gap:1.4rem;margin-bottom:.5rem;flex-wrap:wrap}'
+      +'.f{flex:1;min-width:150px}.lbl{font-size:.62rem;font-weight:700;text-transform:uppercase;color:#555;margin-bottom:.1rem}'
+      +'.val{border-bottom:1px solid #ddd;padding-bottom:.15rem;min-height:1.2rem;font-size:.8rem;white-space:pre-wrap}'
+      +'.sec{font-weight:700;font-size:.72rem;text-transform:uppercase;color:#1246a0;margin:1rem 0 .35rem;border-bottom:1px solid #a8cbfa;padding-bottom:.2rem}'
+      +'.sig{margin-top:2.2rem;display:flex;justify-content:space-between}'
+      +'.sl{border-top:1px solid #333;padding-top:.22rem;font-size:.72rem;text-align:center;width:170px}'
+      +'@media print{body{padding:.8rem}}<\/style><\/head><body>'
+      +'<h1 style="font-size:1.1rem;color:#1246a0;border-bottom:2px solid #1246a0;padding-bottom:.4rem;margin-bottom:.8rem">Physiotherapy Assessment Form<\/h1>'
+      +'<div style="font-size:.78rem;color:#555;margin-bottom:1rem">Physio Time Rehabilitation Centre | Dr. Gobinath S, BPT, MPT (Neuro) | 80988 89505<\/div>'
+      +'<div class="row">'+row('Name',p.name)+row('Age',p.age)+row('Gender',p.gender)+row('Occupation',p.occupation)+'<\/div>'
+      +'<div class="row">'+row('Phone',p.phone)+row('Address',p.address)+'<\/div>'
+      +'<div class="sec">Vitals<\/div>'
+      +'<div class="row">'+row('BP',p.bp)+row('DM',p.dm)+row('Thyroid',p.thyroid)+row('Implants',p.implants)+'<\/div>'
+      +'<div class="sec">Complaints & History<\/div>'
+      +'<div class="row">'+row('Chief Complaints',a.complaints)+'<\/div>'
+      +'<div class="row">'+row('Past History',a.pastHistory)+'<\/div>'
+      +'<div class="sec">Pain History<\/div>'
+      +'<div class="row">'+row('Site',a.site)+row('Side',a.side)+row('Duration',a.duration)+row('Nature',a.nature)+'<\/div>'
+      +'<div class="row">'+row('Aggravating',a.aggravating)+row('Relieving',a.relieving)+'<\/div>'
+      +'<div class="sec">Muscles Involved<\/div>'
+      +'<div class="row">'+row('Weak',a.weakMuscles)+row('Tight',a.tightMuscles)+'<\/div>'
+      +'<div class="sec">Pain Scale<\/div>'
+      +'<div class="row">'+row('Score',(a.painScore||'0')+' / 10')+'<\/div>'
+      +'<div class="sec">Restricted Activities<\/div>'
+      +'<div class="row">'+row('',a.restricted)+'<\/div>'
+      +'<div class="sec">Diagnosis<\/div>'
+      +'<div class="row">'+row('Condition',p.condition)+row('Specific Diagnosis',a.diagnosis)+row('Pain Area',a.painArea)+'<\/div>'
+      +'<div class="sec">Investigation<\/div>'
+      +'<div class="row">'+row('',a.investigations)+'<\/div>'
+      +'<div class="sec">Treatment Plan<\/div>'
+      +'<div class="row">'+row('a) Lengthening',a.stretch)+'<\/div>'
+      +'<div class="row">'+row('b) Strengthening',a.strengthen)+'<\/div>'
+      +'<div class="row">'+row('c) Modalities',a.modalities)+'<\/div>'
+      +'<div class="sec">Appointment<\/div>'
+      +'<div class="row">'+row('Visit Date',fd(a.date))+row('Next Appointment',a.followup?fd(a.followup):'—')+'<\/div>'
+      +'<div class="sec">Billing<\/div>'
+      +'<div class="row">'+row('Amount',a.amount?'₹'+a.amount:'—')+row('Payment Mode',a.payMode)+row('Payment Status',a.payStatus)+'<\/div>'
+      +'<div class="sig"><div class="sl">Therapist: Dr. Gobinath S<\/div><div class="sl">Date: '+fd(a.date)+'<\/div><\/div>'
+      +'<\/body><\/html>';
+    w.document.open();w.document.write(content);w.document.close();
+    setTimeout(function(){w.print();},400);
   }
   function fillSels(){
     ['asmtP','apPat'].forEach(function(id){
@@ -2532,7 +2590,7 @@ window.PT=(function(){
   }
   var _ptP=document.getElementById('ptP');if(_ptP)_ptP.addEventListener('keydown',function(e){if(e.key==='Enter')login();});
   document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
-  return{open:open,close:close,login:login,logout:logout,pg:pg,dash:dash,addPat:addPat,clrForm:clrForm,renderPats:renderPats,viewPat:viewPat,delPat:delPat,goAsmt:goAsmt,fillSels:fillSels,openAppt:openAppt,selS:selS,bookAppt:bookAppt,renderAppts:renderAppts,delAppt:delAppt,remindAppt:remindAppt,viewApptPat:viewApptPat,fillAsmt:fillAsmt,swTab:swTab,setPain:setPain,saveAsmt:saveAsmt,clrAsmt:clrAsmt,printAsmt:printAsmt,closeMdl:closeMdl,csv:csv,testSheets:testSheets,disconnectSheets:disconnectSheets,pullSheets:pullSheets,painSlide:painSlide,clearBodyChart:clearBodyChart,toggleSidebar:toggleSidebar};
+  return{open:open,close:close,login:login,logout:logout,pg:pg,dash:dash,addPat:addPat,clrForm:clrForm,renderPats:renderPats,viewPat:viewPat,delPat:delPat,goAsmt:goAsmt,fillSels:fillSels,openAppt:openAppt,selS:selS,bookAppt:bookAppt,renderAppts:renderAppts,delAppt:delAppt,remindAppt:remindAppt,viewApptPat:viewApptPat,fillAsmt:fillAsmt,swTab:swTab,setPain:setPain,saveAsmt:saveAsmt,clrAsmt:clrAsmt,printAsmt:printAsmt,closeMdl:closeMdl,csv:csv,testSheets:testSheets,disconnectSheets:disconnectSheets,pullSheets:pullSheets,painSlide:painSlide,clearBodyChart:clearBodyChart,toggleSidebar:toggleSidebar,printPatAsmt:printPatAsmt};
 })();
 
 </script>

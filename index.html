@@ -580,6 +580,8 @@ footer strong{color:rgba(255,255,255,.8)}
 
 /* Sidebar */
 .pt-sb{width:210px;flex-shrink:0;background:var(--b800);display:flex;flex-direction:column;height:100%;overflow-y:auto}
+.pt-hbg{display:none;background:none;border:none;font-size:1.25rem;cursor:pointer;color:var(--b900);padding:.2rem .6rem .2rem 0;line-height:1}
+#ptSbBackdrop{z-index:2400}
 .pt-sb-top{padding:.9rem 1rem;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:.7rem}
 .pt-sb-logo{width:32px;height:32px;border-radius:50%;background:transparent;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
 .pt-sb-logo img{width:26px;height:26px;object-fit:contain;mix-blend-mode:normal}
@@ -724,7 +726,9 @@ footer strong{color:rgba(255,255,255,.8)}
   .pt-fg2{grid-template-columns:1fr}
   .pt-slots{grid-template-columns:repeat(3,1fr)}
   .pt-panel{max-width:100%}
-  .pt-sb{display:none}
+  .pt-sb{position:fixed;top:0;left:0;height:100%;z-index:2500;transform:translateX(-100%);transition:transform .25s ease;box-shadow:6px 0 24px rgba(3,21,58,.3)}
+  .pt-sb.open{transform:translateX(0)}
+  .pt-hbg{display:inline-flex}
   .svc-grid,.why-grid,.rev-grid{grid-template-columns:1fr}
 }
 @media(max-width:480px){
@@ -1374,7 +1378,6 @@ footer strong{color:rgba(255,255,255,.8)}
               <button class="pt-nitem" onclick="PT.pg('patients',this)"><span class="ic">👥</span>Patients</button>
               <button class="pt-nitem" onclick="PT.pg('addPatient',this)"><span class="ic">➕</span>Add Patient</button>
               <button class="pt-nitem" onclick="PT.pg('appointments',this)"><span class="ic">📅</span>Appointments</button>
-              <button class="pt-nitem" onclick="PT.pg('assessment',this)"><span class="ic">📋</span>Assessment</button>
             </nav>
             <div class="pt-sb-foot">
               <button class="pt-fi" onclick="PT.pg('sheetsSetup',this)"><span>⚙️</span>Sheets Setup</button>
@@ -1382,8 +1385,10 @@ footer strong{color:rgba(255,255,255,.8)}
               <button class="pt-fi logout" onclick="PT.logout()"><span>🚪</span>Logout</button>
             </div>
           </aside>
+          <div class="pt-mbg" id="ptSbBackdrop" onclick="PT.toggleSidebar(false)"></div>
           <div class="pt-main">
             <div class="pt-mbar">
+              <button class="pt-hbg" id="ptHbg" onclick="PT.toggleSidebar()" aria-label="Menu">☰</button>
               <h2 id="ptTitle">Dashboard</h2>
               <div class="pt-mbar-r">
                 <div class="pt-cpill" id="ptConnPill"><span class="pt-cdot"></span>Local Only</div>
@@ -1849,6 +1854,13 @@ window.PT=(function(){
       pill.style.background='rgba(148,163,184,.12)';pill.style.color='#64748b';pill.style.borderColor='rgba(148,163,184,.3)';
     }
   }
+  function toggleSidebar(force){
+    var sb=document.querySelector('.pt-sb');var bd=document.getElementById('ptSbBackdrop');
+    if(!sb)return;
+    var open = force!==undefined ? force : !sb.classList.contains('open');
+    sb.classList.toggle('open',open);
+    if(bd)bd.classList.toggle('open',open);
+  }
   function testSheets(){
     var u=(document.getElementById('shUrl').value||'').trim();
     var st=document.getElementById('shStatus');
@@ -1954,6 +1966,7 @@ window.PT=(function(){
     if(id==='assessment'){fillSels();var e=document.getElementById('asDt');if(e&&!e.value)e.value=td();}
     if(id==='addPatient'){initAddPatientAssets();var v=document.getElementById('npVisit');if(v&&!v.value)v.value=td();}
     if(id==='sheetsSetup'){var u=document.getElementById('shUrl');if(u)u.value=sheetsUrl();}
+    toggleSidebar(false);
   }
   function dash(){
     var t=td();
@@ -2187,7 +2200,27 @@ window.PT=(function(){
       +r('BP',p.bp)+r('DM',p.dm)+r('Thyroid',p.thyroid)+r('Implants',p.implants)
       +(p.complaints?r('Complaints',p.complaints,true):'')
       +(p.notes?r('Notes',p.notes,true):'');
-    document.getElementById('patMdlB').innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:.72rem">'+body+'<\/div>';
+    var html='<div style="display:grid;grid-template-columns:1fr 1fr;gap:.72rem">'+body+'<\/div>';
+    var a=asmts.filter(function(x){return x.patientId==p.id}).sort(function(x,y){return (y.savedAt||'')<(x.savedAt||'')?-1:1})[0];
+    if(a){
+      html+='<div style="grid-column:1/-1;border-top:1px solid var(--border);margin-top:.9rem;padding-top:.7rem">'
+        +'<div style="font-size:.7rem;font-weight:700;color:var(--b600);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem">📋 Clinical Assessment<\/div>'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:.72rem">'
+        +(a.pastHistory?r('Past History',a.pastHistory,true):'')
+        +r('Pain Site',a.site)+r('Side',a.side)+r('Duration',a.duration)+r('Nature',a.nature)
+        +(a.aggravating?r('Aggravating',a.aggravating):'')+(a.relieving?r('Relieving',a.relieving):'')
+        +(a.weakMuscles?r('Weak Muscles',a.weakMuscles):'')+(a.tightMuscles?r('Tight Muscles',a.tightMuscles):'')
+        +r('Pain Score',a.painScore+' / 10')
+        +(a.restricted?r('Restricted Activities',a.restricted,true):'')
+        +(a.diagnosis?r('Diagnosis',a.diagnosis):'')
+        +(a.investigations?r('Investigations',a.investigations,true):'')
+        +(a.stretch?r('Lengthening Exercises',a.stretch,true):'')
+        +(a.strengthen?r('Strengthening Exercises',a.strengthen,true):'')
+        +(a.modalities?r('Modalities',a.modalities,true):'')
+        +r('Visit Date',fd(a.date))+(a.followup?r('Next Appointment',fd(a.followup)):'')
+        +'<\/div><\/div>';
+    }
+    document.getElementById('patMdlB').innerHTML=html;
     document.getElementById('patMdl').classList.add('open');
   }
   function delPat(idx){
@@ -2412,13 +2445,15 @@ window.PT=(function(){
     toast('Form cleared');
   }
   function printAsmt(){
-    var name=document.getElementById('asN').value||'Patient';
-    var date=document.getElementById('asDt').value||td();
+    function v(id){var e=document.getElementById(id);return e?e.value:'';}
+    var name=v('npN')||'Patient';
+    var date=v('npVisit')||td();
     var w=window.open('','_blank');
     if(!w)return;
-    var pain=selP!==null?'<div style="position:absolute;top:-5px;left:'+selP*10+'%;width:24px;height:24px;background:#1246a0;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.72rem;transform:translateX(-50%)">'+selP+'<\/div>':'';
+    var score=v('npPainSlider')||'0';
+    var pain='<div style="position:absolute;top:-5px;left:'+(score*10)+'%;width:24px;height:24px;background:#1246a0;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.72rem;transform:translateX(-50%)">'+score+'</div>';
     var content='<!DOCTYPE html>'
-      +'<html><head><title>Assessment - '+esc(name)+'<\/title>'
+      +'<html><head><title>Assessment - '+esc(name)+'</title>'
       +'<style>body{font-family:Arial,sans-serif;padding:2rem;color:#111;font-size:13px}'
       +'.row{display:flex;gap:1.4rem;margin-bottom:.5rem}'
       +'.f{flex:1}.lbl{font-size:.62rem;font-weight:700;text-transform:uppercase;color:#555;margin-bottom:.1rem}'
@@ -2428,49 +2463,54 @@ window.PT=(function(){
       +'.sig{margin-top:2.2rem;display:flex;justify-content:space-between}'
       +'.sl{border-top:1px solid #333;padding-top:.22rem;font-size:.72rem;text-align:center;width:170px}'
       +'@media print{body{padding:.8rem}}'
-      +'<\/style><\/head><body>'
-      +'<h1 style="font-size:1.1rem;color:#1246a0;border-bottom:2px solid #1246a0;padding-bottom:.4rem;margin-bottom:.8rem">Physiotherapy Assessment Form<\/h1>'
-      +'<div style="font-size:.78rem;color:#555;margin-bottom:1rem">Physio Time Rehabilitation Centre | Dr. Gobinath S, BPT, MPT (Neuro) | 80988 89505<\/div>'
-      +'<div class="row"><div class="f"><div class="lbl">Name<\/div><div class="val">'+esc(document.getElementById('asN').value)+'<\/div><\/div>'
-      +'<div class="f"><div class="lbl">Age<\/div><div class="val">'+esc(document.getElementById('asA').value)+'<\/div><\/div>'
-      +'<div class="f"><div class="lbl">Gender<\/div><div class="val">'+esc(document.getElementById('asG').value)+'<\/div><\/div>'
-      +'<div class="f"><div class="lbl">Occupation<\/div><div class="val">'+esc(document.getElementById('asOc').value)+'<\/div><\/div><\/div>'
-      +'<div class="row"><div class="f"><div class="lbl">Address<\/div><div class="val">'+esc(document.getElementById('asAd').value)+'<\/div><\/div><\/div>'
-      +'<div class="sec">Vitals<\/div>'
+      +'</style></head><body>'
+      +'<h1 style="font-size:1.1rem;color:#1246a0;border-bottom:2px solid #1246a0;padding-bottom:.4rem;margin-bottom:.8rem">Physiotherapy Assessment Form</h1>'
+      +'<div style="font-size:.78rem;color:#555;margin-bottom:1rem">Physio Time Rehabilitation Centre | Dr. Gobinath S, BPT, MPT (Neuro) | 80988 89505</div>'
+      +'<div class="row"><div class="f"><div class="lbl">Name</div><div class="val">'+esc(v('npN'))+'</div></div>'
+      +'<div class="f"><div class="lbl">Age</div><div class="val">'+esc(v('npA'))+'</div></div>'
+      +'<div class="f"><div class="lbl">Gender</div><div class="val">'+esc(v('npG'))+'</div></div>'
+      +'<div class="f"><div class="lbl">Occupation</div><div class="val">'+esc(v('npOc'))+'</div></div></div>'
+      +'<div class="row"><div class="f"><div class="lbl">Address</div><div class="val">'+esc(v('npAd'))+'</div></div></div>'
+      +'<div class="sec">Vitals</div>'
       +'<div class="row">'
-      +'<div class="f"><div class="lbl">BP<\/div><div class="val">'+esc(document.getElementById('asBp').value)+'<\/div><\/div>'
-      +'<div class="f"><div class="lbl">DM<\/div><div class="val">'+esc(document.getElementById('asDm').value)+'<\/div><\/div>'
-      +'<div class="f"><div class="lbl">Thyroid<\/div><div class="val">'+esc(document.getElementById('asTh').value)+'<\/div><\/div>'
-      +'<div class="f"><div class="lbl">Implants<\/div><div class="val">'+esc(document.getElementById('asIm').value)+'<\/div><\/div><\/div>'
-      +'<div class="sec">Complaints & History<\/div>'
-      +'<div class="row"><div class="f"><div class="lbl">Chief Complaints<\/div><div class="val" style="min-height:1.8rem">'+esc(document.getElementById('asCmp').value)+'<\/div><\/div><\/div>'
-      +'<div class="row"><div class="f"><div class="lbl">Past History<\/div><div class="val" style="min-height:1.8rem">'+esc(document.getElementById('asPh').value)+'<\/div><\/div><\/div>'
-      +'<div class="sec">Pain History<\/div>'
+      +'<div class="f"><div class="lbl">BP</div><div class="val">'+esc(v('npBp'))+'</div></div>'
+      +'<div class="f"><div class="lbl">DM</div><div class="val">'+esc(v('npDm'))+'</div></div>'
+      +'<div class="f"><div class="lbl">Thyroid</div><div class="val">'+esc(v('npTh'))+'</div></div>'
+      +'<div class="f"><div class="lbl">Implants</div><div class="val">'+esc(v('npIm'))+'</div></div></div>'
+      +'<div class="sec">Complaints & History</div>'
+      +'<div class="row"><div class="f"><div class="lbl">Chief Complaints</div><div class="val" style="min-height:1.8rem">'+esc(v('npCmp'))+'</div></div></div>'
+      +'<div class="row"><div class="f"><div class="lbl">Past History</div><div class="val" style="min-height:1.8rem">'+esc(v('npPh2'))+'</div></div></div>'
+      +'<div class="sec">Pain History</div>'
       +'<div class="row">'
-      +'<div class="f"><div class="lbl">Site<\/div><div class="val">'+esc(document.getElementById('asSi').value)+'<\/div><\/div>'
-      +'<div class="f"><div class="lbl">Side<\/div><div class="val">'+esc(document.getElementById('asSd').value)+'<\/div><\/div>'
-      +'<div class="f"><div class="lbl">Duration<\/div><div class="val">'+esc(document.getElementById('asDr').value)+'<\/div><\/div>'
-      +'<div class="f"><div class="lbl">Nature<\/div><div class="val">'+esc(gNat())+'<\/div><\/div><\/div>'
+      +'<div class="f"><div class="lbl">Site</div><div class="val">'+esc(v('npSite'))+'</div></div>'
+      +'<div class="f"><div class="lbl">Side</div><div class="val">'+esc(v('npSide'))+'</div></div>'
+      +'<div class="f"><div class="lbl">Duration</div><div class="val">'+esc(v('npDur'))+'</div></div>'
+      +'<div class="f"><div class="lbl">Nature</div><div class="val">'+esc(v('npNat'))+'</div></div></div>'
       +'<div class="row">'
-      +'<div class="f"><div class="lbl">Aggravating<\/div><div class="val">'+esc(document.getElementById('asAg').value)+'<\/div><\/div>'
-      +'<div class="f"><div class="lbl">Relieving<\/div><div class="val">'+esc(document.getElementById('asRl').value)+'<\/div><\/div><\/div>'
-      +'<div class="sec">Muscles Involved<\/div>'
+      +'<div class="f"><div class="lbl">Aggravating</div><div class="val">'+esc(v('npAgg'))+'</div></div>'
+      +'<div class="f"><div class="lbl">Relieving</div><div class="val">'+esc(v('npRel'))+'</div></div></div>'
+      +'<div class="sec">Muscles Involved</div>'
       +'<div class="row">'
-      +'<div class="f"><div class="lbl">Weak<\/div><div class="val">'+esc(gW())+'<\/div><\/div>'
-      +'<div class="f"><div class="lbl">Tight<\/div><div class="val">'+esc(gT())+'<\/div><\/div><\/div>'
-      +'<div class="sec">Pain Scale<\/div>'
-      +'<div class="pb">'+pain+'<\/div>'
-      +'<div style="display:flex;justify-content:space-between;font-size:.68rem;color:#777"><span>0 No Pain<\/span><span>5 Moderate<\/span><span>10 Worst<\/span><\/div>'
-      +'<div class="sec">Body Chart Location<\/div>'
-      +'<div class="row"><div class="f"><div class="lbl">Pain Location<\/div><div class="val" style="min-height:1.4rem">'+esc((document.getElementById('asBodyChart')||{value:''}).value)+'<\/div><\/div><\/div>'
-      +'<div class="sec">Treatment Plan<\/div>'
-      +'<div class="row"><div class="f"><div class="lbl">a) Stretching<\/div><div class="val" style="min-height:1.8rem">'+esc(document.getElementById('asStr').value)+'<\/div><\/div><\/div>'
-      +'<div class="row"><div class="f"><div class="lbl">b) Strengthening<\/div><div class="val" style="min-height:1.8rem">'+esc(document.getElementById('asStg').value)+'<\/div><\/div><\/div>'
-      +'<div class="row"><div class="f"><div class="lbl">c) Modalities<\/div><div class="val" style="min-height:1.8rem">'+esc(document.getElementById('asMod').value)+'<\/div><\/div><\/div>'
+      +'<div class="f"><div class="lbl">Weak</div><div class="val">'+esc(v('npWeak'))+'</div></div>'
+      +'<div class="f"><div class="lbl">Tight</div><div class="val">'+esc(v('npTight'))+'</div></div></div>'
+      +'<div class="sec">Pain Scale</div>'
+      +'<div class="pb">'+pain+'</div>'
+      +'<div style="display:flex;justify-content:space-between;font-size:.68rem;color:#777"><span>0 No Pain</span><span>5 Moderate</span><span>10 Worst</span></div>'
+      +'<div class="sec">Restricted Activities</div>'
+      +'<div class="row"><div class="f"><div class="val" style="min-height:1.4rem">'+esc(v('npRestrict'))+'</div></div></div>'
+      +'<div class="sec">Diagnosis</div>'
+      +'<div class="row"><div class="f"><div class="lbl">Condition</div><div class="val">'+esc(v('npCond'))+'</div></div>'
+      +'<div class="f"><div class="lbl">Specific Diagnosis</div><div class="val">'+esc(v('npDx'))+'</div></div></div>'
+      +'<div class="sec">Investigation</div>'
+      +'<div class="row"><div class="f"><div class="val" style="min-height:1.4rem">'+esc(v('npInv'))+'</div></div></div>'
+      +'<div class="sec">Treatment Plan</div>'
+      +'<div class="row"><div class="f"><div class="lbl">a) Lengthening Exercises</div><div class="val" style="min-height:1.8rem">'+esc(v('npLen'))+'</div></div></div>'
+      +'<div class="row"><div class="f"><div class="lbl">b) Strengthening Exercises</div><div class="val" style="min-height:1.8rem">'+esc(v('npStg'))+'</div></div></div>'
+      +'<div class="row"><div class="f"><div class="lbl">c) Modalities</div><div class="val" style="min-height:1.8rem">'+esc(v('npMod'))+'</div></div></div>'
       +'<div class="sig">'
-      +'<div class="sl">Therapist: '+esc(document.getElementById('asThr').value||'Dr. Gobinath S')+'<\/div>'
-      +'<div class="sl">Date: '+fd(date)+'<\/div><\/div>'
-      +'<\/body><\/html>';
+      +'<div class="sl">Therapist: Dr. Gobinath S</div>'
+      +'<div class="sl">Date: '+fd(date)+'</div></div>'
+      +'</body></html>';
     w.document.open();
     w.document.write(content);
     w.document.close();
@@ -2492,7 +2532,7 @@ window.PT=(function(){
   }
   var _ptP=document.getElementById('ptP');if(_ptP)_ptP.addEventListener('keydown',function(e){if(e.key==='Enter')login();});
   document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
-  return{open:open,close:close,login:login,logout:logout,pg:pg,dash:dash,addPat:addPat,clrForm:clrForm,renderPats:renderPats,viewPat:viewPat,delPat:delPat,goAsmt:goAsmt,fillSels:fillSels,openAppt:openAppt,selS:selS,bookAppt:bookAppt,renderAppts:renderAppts,delAppt:delAppt,remindAppt:remindAppt,viewApptPat:viewApptPat,fillAsmt:fillAsmt,swTab:swTab,setPain:setPain,saveAsmt:saveAsmt,clrAsmt:clrAsmt,printAsmt:printAsmt,closeMdl:closeMdl,csv:csv,testSheets:testSheets,disconnectSheets:disconnectSheets,pullSheets:pullSheets,painSlide:painSlide,clearBodyChart:clearBodyChart};
+  return{open:open,close:close,login:login,logout:logout,pg:pg,dash:dash,addPat:addPat,clrForm:clrForm,renderPats:renderPats,viewPat:viewPat,delPat:delPat,goAsmt:goAsmt,fillSels:fillSels,openAppt:openAppt,selS:selS,bookAppt:bookAppt,renderAppts:renderAppts,delAppt:delAppt,remindAppt:remindAppt,viewApptPat:viewApptPat,fillAsmt:fillAsmt,swTab:swTab,setPain:setPain,saveAsmt:saveAsmt,clrAsmt:clrAsmt,printAsmt:printAsmt,closeMdl:closeMdl,csv:csv,testSheets:testSheets,disconnectSheets:disconnectSheets,pullSheets:pullSheets,painSlide:painSlide,clearBodyChart:clearBodyChart,toggleSidebar:toggleSidebar};
 })();
 
 </script>

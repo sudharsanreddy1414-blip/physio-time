@@ -2069,6 +2069,7 @@ window.PT=(function(){
       relieving:document.getElementById('npRel').value,
       restricted:document.getElementById('npRestrict').value,
       bodyChart:document.getElementById('npBodyImg')?document.getElementById('npBodyImg').dataset.dots||'':'',
+      bodyChartImg:captureBodyChartImage(),
       investigations:document.getElementById('npInv').value,
       diagnosis:document.getElementById('npDx').value,
       weakMuscles:document.getElementById('npWeak').value,
@@ -2093,7 +2094,8 @@ window.PT=(function(){
     asmts.unshift(a);
     save();clrForm();fillSels();dash();
     pushSheets('patient',p);
-    pushSheets('assessment',a);
+    var aForSheet={};for(var k in a){if(k!=='bodyChartImg')aForSheet[k]=a[k];}
+    pushSheets('assessment',aForSheet);
     var st=document.getElementById('npSheetStatus');
     if(st) st.textContent=sheetsUrl()?'Saved to Google Sheets':'Saved locally';
     toast('✅ Assessment saved!');
@@ -2149,6 +2151,22 @@ window.PT=(function(){
     var cv=document.getElementById('npBodyCanvas');var img=document.getElementById('npBodyImg');
     if(cv){var ctx=cv.getContext('2d');ctx.clearRect(0,0,cv.width,cv.height);}
     if(img)img.dataset.dots='';
+  }
+  function captureBodyChartImage(){
+    var img=document.getElementById('npBodyImg');
+    var cv=document.getElementById('npBodyCanvas');
+    if(!img||!cv||!img.complete||!img.naturalWidth)return '';
+    try{
+      var maxW=360;
+      var scale=Math.min(1,maxW/img.naturalWidth);
+      var out=document.createElement('canvas');
+      out.width=Math.round(img.naturalWidth*scale);
+      out.height=Math.round(img.naturalHeight*scale);
+      var ctx=out.getContext('2d');
+      ctx.drawImage(img,0,0,out.width,out.height);
+      if(cv.width&&cv.height)ctx.drawImage(cv,0,0,cv.width,cv.height,0,0,out.width,out.height);
+      return out.toDataURL('image/png');
+    }catch(e){return '';}
   }
   function painSlide(v){
     v=parseInt(v,10);
@@ -2224,7 +2242,9 @@ window.PT=(function(){
         +(a.modalities?r('Modalities',a.modalities,true):'')
         +r('Visit Date',fd(a.date))+(a.followup?r('Next Appointment',fd(a.followup)):'')
         +(a.amount?r('Amount',' ₹'+a.amount):'')+(a.payMode?r('Payment Mode',a.payMode):'')+(a.payStatus?r('Payment Status',a.payStatus):'')
-        +'<\/div><\/div>';
+        +'<\/div>'
+        +(a.bodyChartImg?'<div style="margin-top:.7rem"><div style="font-size:.64rem;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:.3rem">Body Chart<\/div><img src="'+a.bodyChartImg+'" style="max-width:220px;border:1px solid var(--border);border-radius:6px"/><\/div>':'')
+        +'<\/div>';
     }
     document.getElementById('patMdlB').innerHTML=html;
     document.getElementById('patMdl').classList.add('open');
@@ -2248,15 +2268,24 @@ window.PT=(function(){
     var w=window.open('','_blank');
     if(!w)return;
     function row(l,v){return '<div class="f"><div class="lbl">'+l+'<\/div><div class="val">'+esc(String(v||'—'))+'<\/div><\/div>';}
-    var content='<!DOCTYPE html><html><head><title>Assessment - '+esc(p.name)+'<\/title>'
-      +'<style>body{font-family:Arial,sans-serif;padding:2rem;color:#111;font-size:13px}'
+    var painImgEl=document.getElementById('asPainImg');
+    var painImgSrc=painImgEl?painImgEl.src:'';
+    var score=a.painScore||'0';
+    var painBar='<div class="pb"><div style="position:absolute;top:-6px;left:'+(score*10)+'%;width:24px;height:24px;background:#1246a0;border:2px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.68rem;transform:translateX(-50%)">'+score+'<\/div><\/div>';
+    var content='<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Assessment - '+esc(p.name)+'<\/title>'
+      +'<style>body{font-family:Arial,sans-serif;padding:1.4rem;color:#111;font-size:13px;max-width:820px;margin:0 auto}'
+      +'img{max-width:100%;height:auto}'
       +'.row{display:flex;gap:1.4rem;margin-bottom:.5rem;flex-wrap:wrap}'
-      +'.f{flex:1;min-width:150px}.lbl{font-size:.62rem;font-weight:700;text-transform:uppercase;color:#555;margin-bottom:.1rem}'
-      +'.val{border-bottom:1px solid #ddd;padding-bottom:.15rem;min-height:1.2rem;font-size:.8rem;white-space:pre-wrap}'
-      +'.sec{font-weight:700;font-size:.72rem;text-transform:uppercase;color:#1246a0;margin:1rem 0 .35rem;border-bottom:1px solid #a8cbfa;padding-bottom:.2rem}'
-      +'.sig{margin-top:2.2rem;display:flex;justify-content:space-between}'
+      +'.f{flex:1;min-width:140px}.lbl{font-size:.62rem;font-weight:700;text-transform:uppercase;color:#555;margin-bottom:.1rem}'
+      +'.val{border-bottom:1px solid #ddd;padding-bottom:.15rem;min-height:1.2rem;font-size:.8rem;white-space:pre-wrap;word-break:break-word}'
+      +'.sec{font-weight:700;font-size:.72rem;text-transform:uppercase;color:#1246a0;margin:1.1rem 0 .4rem;border-bottom:1px solid #a8cbfa;padding-bottom:.2rem}'
+      +'.pb{position:relative;height:14px;border-radius:7px;background:linear-gradient(90deg,#4ade80,#facc15,#ef4444);margin:.6rem 0 .3rem}'
+      +'.bcwrap{display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-start;margin-top:.4rem}'
+      +'.sig{margin-top:2.2rem;display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem}'
       +'.sl{border-top:1px solid #333;padding-top:.22rem;font-size:.72rem;text-align:center;width:170px}'
-      +'@media print{body{padding:.8rem}}<\/style><\/head><body>'
+      +'@media print{body{padding:.6rem}}'
+      +'@media(max-width:480px){.row{gap:.7rem}.f{min-width:120px}}'
+      +'<\/style><\/head><body>'
       +'<h1 style="font-size:1.1rem;color:#1246a0;border-bottom:2px solid #1246a0;padding-bottom:.4rem;margin-bottom:.8rem">Physiotherapy Assessment Form<\/h1>'
       +'<div style="font-size:.78rem;color:#555;margin-bottom:1rem">Physio Time Rehabilitation Centre | Dr. Gobinath S, BPT, MPT (Neuro) | 80988 89505<\/div>'
       +'<div class="row">'+row('Name',p.name)+row('Age',p.age)+row('Gender',p.gender)+row('Occupation',p.occupation)+'<\/div>'
@@ -2272,7 +2301,11 @@ window.PT=(function(){
       +'<div class="sec">Muscles Involved<\/div>'
       +'<div class="row">'+row('Weak',a.weakMuscles)+row('Tight',a.tightMuscles)+'<\/div>'
       +'<div class="sec">Pain Scale<\/div>'
-      +'<div class="row">'+row('Score',(a.painScore||'0')+' / 10')+'<\/div>'
+      +(painImgSrc?'<img src="'+painImgSrc+'" style="max-width:420px;display:block;margin-bottom:.3rem"/>':'')
+      +painBar
+      +'<div style="font-size:.8rem;font-weight:700;color:#1246a0">Score: '+score+' / 10<\/div>'
+      +'<div class="sec">Body Chart — Pain Location<\/div>'
+      +(a.bodyChartImg?'<div class="bcwrap"><img src="'+a.bodyChartImg+'" style="max-width:300px;border:1px solid #ddd;border-radius:6px"/><\/div>':'<div style="font-size:.75rem;color:#888">No pain location marked<\/div>')
       +'<div class="sec">Restricted Activities<\/div>'
       +'<div class="row">'+row('',a.restricted)+'<\/div>'
       +'<div class="sec">Diagnosis<\/div>'
@@ -2509,18 +2542,24 @@ window.PT=(function(){
     var w=window.open('','_blank');
     if(!w)return;
     var score=v('npPainSlider')||'0';
-    var pain='<div style="position:absolute;top:-5px;left:'+(score*10)+'%;width:24px;height:24px;background:#1246a0;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.72rem;transform:translateX(-50%)">'+score+'</div>';
+    var pain='<div style="position:absolute;top:-6px;left:'+(score*10)+'%;width:24px;height:24px;background:#1246a0;border:2px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.68rem;transform:translateX(-50%)">'+score+'</div>';
+    var painImgEl=document.getElementById('npPainImg');
+    var painImgSrc=painImgEl?painImgEl.src:'';
+    var bodyImgSrc=captureBodyChartImage();
     var content='<!DOCTYPE html>'
-      +'<html><head><title>Assessment - '+esc(name)+'</title>'
-      +'<style>body{font-family:Arial,sans-serif;padding:2rem;color:#111;font-size:13px}'
-      +'.row{display:flex;gap:1.4rem;margin-bottom:.5rem}'
-      +'.f{flex:1}.lbl{font-size:.62rem;font-weight:700;text-transform:uppercase;color:#555;margin-bottom:.1rem}'
-      +'.val{border-bottom:1px solid #ddd;padding-bottom:.15rem;min-height:1.2rem;font-size:.8rem}'
-      +'.sec{font-weight:700;font-size:.72rem;text-transform:uppercase;color:#1246a0;margin:1rem 0 .35rem;border-bottom:1px solid #a8cbfa;padding-bottom:.2rem}'
-      +'.pb{height:14px;border-radius:7px;background:linear-gradient(90deg,#4ade80,#facc15,#ef4444);position:relative;margin:.35rem 0}'
-      +'.sig{margin-top:2.2rem;display:flex;justify-content:space-between}'
+      +'<html><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Assessment - '+esc(name)+'</title>'
+      +'<style>body{font-family:Arial,sans-serif;padding:1.4rem;color:#111;font-size:13px;max-width:820px;margin:0 auto}'
+      +'img{max-width:100%;height:auto}'
+      +'.row{display:flex;gap:1.4rem;margin-bottom:.5rem;flex-wrap:wrap}'
+      +'.f{flex:1;min-width:140px}.lbl{font-size:.62rem;font-weight:700;text-transform:uppercase;color:#555;margin-bottom:.1rem}'
+      +'.val{border-bottom:1px solid #ddd;padding-bottom:.15rem;min-height:1.2rem;font-size:.8rem;white-space:pre-wrap;word-break:break-word}'
+      +'.sec{font-weight:700;font-size:.72rem;text-transform:uppercase;color:#1246a0;margin:1.1rem 0 .4rem;border-bottom:1px solid #a8cbfa;padding-bottom:.2rem}'
+      +'.pb{position:relative;height:14px;border-radius:7px;background:linear-gradient(90deg,#4ade80,#facc15,#ef4444);margin:.6rem 0 .3rem}'
+      +'.bcwrap{display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-start;margin-top:.4rem}'
+      +'.sig{margin-top:2.2rem;display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem}'
       +'.sl{border-top:1px solid #333;padding-top:.22rem;font-size:.72rem;text-align:center;width:170px}'
-      +'@media print{body{padding:.8rem}}'
+      +'@media print{body{padding:.6rem}}'
+      +'@media(max-width:480px){.row{gap:.7rem}.f{min-width:120px}}'
       +'</style></head><body>'
       +'<h1 style="font-size:1.1rem;color:#1246a0;border-bottom:2px solid #1246a0;padding-bottom:.4rem;margin-bottom:.8rem">Physiotherapy Assessment Form</h1>'
       +'<div style="font-size:.78rem;color:#555;margin-bottom:1rem">Physio Time Rehabilitation Centre | Dr. Gobinath S, BPT, MPT (Neuro) | 80988 89505</div>'
@@ -2552,19 +2591,30 @@ window.PT=(function(){
       +'<div class="f"><div class="lbl">Weak</div><div class="val">'+esc(v('npWeak'))+'</div></div>'
       +'<div class="f"><div class="lbl">Tight</div><div class="val">'+esc(v('npTight'))+'</div></div></div>'
       +'<div class="sec">Pain Scale</div>'
+      +(painImgSrc?'<img src="'+painImgSrc+'" style="max-width:420px;display:block;margin-bottom:.3rem"/>':'')
       +'<div class="pb">'+pain+'</div>'
-      +'<div style="display:flex;justify-content:space-between;font-size:.68rem;color:#777"><span>0 No Pain</span><span>5 Moderate</span><span>10 Worst</span></div>'
+      +'<div style="font-size:.8rem;font-weight:700;color:#1246a0">Score: '+score+' / 10</div>'
+      +'<div class="sec">Body Chart — Pain Location</div>'
+      +(bodyImgSrc?'<div class="bcwrap"><img src="'+bodyImgSrc+'" style="max-width:300px;border:1px solid #ddd;border-radius:6px"/></div>':'<div style="font-size:.75rem;color:#888">No pain location marked</div>')
       +'<div class="sec">Restricted Activities</div>'
       +'<div class="row"><div class="f"><div class="val" style="min-height:1.4rem">'+esc(v('npRestrict'))+'</div></div></div>'
       +'<div class="sec">Diagnosis</div>'
       +'<div class="row"><div class="f"><div class="lbl">Condition</div><div class="val">'+esc(v('npCond'))+'</div></div>'
-      +'<div class="f"><div class="lbl">Specific Diagnosis</div><div class="val">'+esc(v('npDx'))+'</div></div></div>'
+      +'<div class="f"><div class="lbl">Specific Diagnosis</div><div class="val">'+esc(v('npDx'))+'</div></div>'
+      +'<div class="f"><div class="lbl">Pain Area</div><div class="val">'+esc(v('npPainArea'))+'</div></div></div>'
       +'<div class="sec">Investigation</div>'
       +'<div class="row"><div class="f"><div class="val" style="min-height:1.4rem">'+esc(v('npInv'))+'</div></div></div>'
       +'<div class="sec">Treatment Plan</div>'
       +'<div class="row"><div class="f"><div class="lbl">a) Lengthening Exercises</div><div class="val" style="min-height:1.8rem">'+esc(v('npLen'))+'</div></div></div>'
       +'<div class="row"><div class="f"><div class="lbl">b) Strengthening Exercises</div><div class="val" style="min-height:1.8rem">'+esc(v('npStg'))+'</div></div></div>'
       +'<div class="row"><div class="f"><div class="lbl">c) Modalities</div><div class="val" style="min-height:1.8rem">'+esc(v('npMod'))+'</div></div></div>'
+      +'<div class="sec">Appointment</div>'
+      +'<div class="row"><div class="f"><div class="lbl">Visit Date</div><div class="val">'+fd(date)+'</div></div>'
+      +'<div class="f"><div class="lbl">Next Appointment</div><div class="val">'+esc(v('npNext')?fd(v('npNext')):'—')+'</div></div></div>'
+      +'<div class="sec">Billing</div>'
+      +'<div class="row"><div class="f"><div class="lbl">Amount</div><div class="val">'+(v('npAmt')?'₹'+esc(v('npAmt')):'—')+'</div></div>'
+      +'<div class="f"><div class="lbl">Payment Mode</div><div class="val">'+esc(v('npPayMode'))+'</div></div>'
+      +'<div class="f"><div class="lbl">Payment Status</div><div class="val">'+esc(v('npPayStatus'))+'</div></div></div>'
       +'<div class="sig">'
       +'<div class="sl">Therapist: Dr. Gobinath S</div>'
       +'<div class="sl">Date: '+fd(date)+'</div></div>'

@@ -662,6 +662,7 @@ footer strong{color:rgba(255,255,255,.8)}
 
 /* Stats */
 .pt-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:.9rem;margin-bottom:1.1rem}
+.pt-dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:.95rem}
 .pt-stat{background:var(--white);border-radius:var(--r-lg);padding:1.15rem 1.1rem;border:1px solid var(--border);position:relative;overflow:hidden;box-shadow:var(--shadow-xs);transition:transform .22s ease,box-shadow .22s ease}
 .pt-stat:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
 .pt-stat::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:4px 0 0 4px}
@@ -785,6 +786,7 @@ footer strong{color:rgba(255,255,255,.8)}
   section{padding:66px 4%}
   .hero-inner{padding:0}
   .pt-stats{grid-template-columns:1fr 1fr}
+  .pt-dash-grid{grid-template-columns:1fr}
   .pt-fg2{grid-template-columns:1fr}
   .pt-slots{grid-template-columns:repeat(3,1fr)}
   .pt-panel{max-width:100%}
@@ -1229,7 +1231,7 @@ footer strong{color:rgba(255,255,255,.8)}
     <div class="map-container reveal" style="border-radius:18px;overflow:hidden;box-shadow:var(--shadow-lg)">
       <a href="https://maps.app.goo.gl/iEyyWqLzZzCzE9mG8?g_st=ic" target="_blank" rel="noopener" class="map-overlay-btn" aria-label="Open in Google Maps">🗺️ Get Directions</a>
       <div class="map-wrap" style="border-radius:0;box-shadow:none;margin:0">
-      <iframe src="https://maps.google.com/maps?q=Plot+1+3rd+Cross+Street+Rajiv+Gandhi+Nagar+Sriperumbudur+602105&output=embed&z=17&hl=en" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Physio Time Location"></iframe>
+      <iframe src="https://maps.google.com/maps?q=PHYSIO+TIME+Physiotherapist+3rd+Cross+Street+Sriperumbudur&output=embed&z=16&hl=en" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Physio Time Location"></iframe>
     </div>
     </div>
     </div>
@@ -1474,7 +1476,7 @@ footer strong{color:rgba(255,255,255,.8)}
                   <div class="pt-stat s3"><div class="pt-si">🏥</div><div class="pt-sv" id="stV">0</div><div class="pt-sl">Today's Visits</div></div>
                   <div class="pt-stat s4"><div class="pt-si">📋</div><div class="pt-sv" id="stA">0</div><div class="pt-sl">Today's Appts</div></div>
                 </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:.95rem">
+                <div class="pt-dash-grid">
                   <div class="pt-card"><div class="pt-card-hd"><h3>🕐 Recent Patients</h3><button class="ptbtn ptbtn-o" style="font-size:.65rem;padding:.28rem .6rem" onclick="PT.pg('patients',null)">View All</button></div><div class="pt-card-bd" id="dPats"><div class="pt-empty"><div class="ee">👥</div><p>No patients yet</p></div></div></div>
                   <div class="pt-card"><div class="pt-card-hd"><h3>📊 Top Conditions</h3></div><div class="pt-card-bd" id="dConds"><div class="pt-empty"><div class="ee">📊</div><p>No data</p></div></div></div>
                 </div>

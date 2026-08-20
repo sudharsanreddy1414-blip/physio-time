@@ -329,7 +329,7 @@ nav{
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 h1.hh{
   font-family:var(--head);
-  font-size:clamp(2.2rem,5vw,3.8rem);
+  font-size:clamp(2rem,7vw,3.8rem);
   font-weight:900;line-height:1.1;
   color:var(--white);margin-bottom:1.2rem;
 }
@@ -688,7 +688,8 @@ footer strong{color:rgba(255,255,255,.8)}
 .ptbtn-g{background:linear-gradient(135deg,#c9a84c,#f0d98c);color:var(--b900);box-shadow:0 4px 14px rgba(201,168,76,.3)}
 
 /* Table */
-.pt-tbl{width:100%;border-collapse:collapse;font-size:.78rem}
+.pt-tbl-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:inherit}
+.pt-tbl{width:100%;min-width:560px;border-collapse:collapse;font-size:.78rem}
 .pt-tbl th{background:var(--surface);padding:.72rem .9rem;text-align:left;font-size:.64rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);position:sticky;top:0}
 .pt-tbl td{padding:.82rem .9rem;border-bottom:1px solid var(--border);color:var(--text)}
 .pt-tbl tr:last-child td{border-bottom:none}
@@ -798,7 +799,6 @@ footer strong{color:rgba(255,255,255,.8)}
   .svc-grid,.why-grid,.rev-grid{grid-template-columns:1fr}
 }
 @media(max-width:480px){
-  h1.hh{font-size:2rem}
   .hero-stats{flex-direction:column;gap:0}
   .hs-div{width:auto;height:1px}
   .pt-stats{grid-template-columns:1fr}
@@ -810,6 +810,15 @@ footer strong{color:rgba(255,255,255,.8)}
   .why-grid{grid-template-columns:repeat(2,1fr)}
   .rev-grid{grid-template-columns:repeat(2,1fr)}
   .pt-stats{grid-template-columns:repeat(2,1fr)}
+}
+@media(min-width:1600px){
+  .container{max-width:1320px}
+  .pt-panel{max-width:1180px}
+}
+@media(min-width:2200px){
+  .container{max-width:1440px}
+  .pt-panel{max-width:1280px}
+  body{font-size:1.05rem}
 }
 
 /* Logo transparency fix */
@@ -1480,7 +1489,7 @@ footer strong{color:rgba(255,255,255,.8)}
                   <div class="pt-card"><div class="pt-card-hd"><h3>🕐 Recent Patients</h3><button class="ptbtn ptbtn-o" style="font-size:.65rem;padding:.28rem .6rem" onclick="PT.pg('patients',null)">View All</button></div><div class="pt-card-bd" id="dPats"><div class="pt-empty"><div class="ee">👥</div><p>No patients yet</p></div></div></div>
                   <div class="pt-card"><div class="pt-card-hd"><h3>📊 Top Conditions</h3></div><div class="pt-card-bd" id="dConds"><div class="pt-empty"><div class="ee">📊</div><p>No data</p></div></div></div>
                 </div>
-                <div class="pt-card" style="margin-top:.95rem"><div class="pt-card-hd"><h3>📅 Upcoming Appointments</h3><button class="ptbtn ptbtn-o" style="font-size:.65rem;padding:.28rem .6rem" onclick="PT.pg('appointments',null)">Full View</button></div><div class="pt-card-bd" id="dAppts"><div class="pt-empty"><div class="ee">📅</div><p>No upcoming appointments</p></div></div></div>
+                <div class="pt-card" style="margin-top:.95rem"><div class="pt-card-hd"><h3>📅 Upcoming Appointments</h3><button class="ptbtn ptbtn-o" style="font-size:.65rem;padding:.28rem .6rem" onclick="PT.pg('appointments',null)">Full View</button></div><div class="pt-card-bd pt-tbl-wrap" id="dAppts"><div class="pt-empty"><div class="ee">📅</div><p>No upcoming appointments</p></div></div></div>
                 <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.5rem">
                   <button class="ptbtn ptbtn-p" onclick="PT.pg('addPatient',null)">➕ New Patient</button>
                   <button class="ptbtn ptbtn-o" onclick="PT.csv()">📤 Export CSV</button>
@@ -1506,7 +1515,7 @@ footer strong{color:rgba(255,255,255,.8)}
                     </div>
                   </div>
                 </div>
-                <div class="pt-card"><div id="patsT" style="padding:0"></div></div>
+                <div class="pt-card"><div class="pt-tbl-wrap" id="patsT" style="padding:0"></div></div>
               </div>
               <!-- ADD PATIENT PAGE -->
               <div class="pt-page" id="ptPg-addPatient">
@@ -1632,11 +1641,11 @@ footer strong{color:rgba(255,255,255,.8)}
                       <button class="ptbtn ptbtn-p" style="font-size:.65rem;padding:.28rem .6rem" onclick="PT.openAppt()">➕ Book</button>
                     </div>
                   </div>
-                  <div class="pt-card-bd" id="apUpT"></div>
+                  <div class="pt-card-bd pt-tbl-wrap" id="apUpT"></div>
                 </div>
                 <div class="pt-card">
                   <div class="pt-card-hd"><h3>🕐 Past Appointments (recent 10)</h3></div>
-                  <div id="apPastT" style="padding:0"></div>
+                  <div class="pt-tbl-wrap" id="apPastT" style="padding:0"></div>
                 </div>
               </div>
               <!-- ASSESSMENT PAGE -->

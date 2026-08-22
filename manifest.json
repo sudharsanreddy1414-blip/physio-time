@@ -1,0 +1,29 @@
+{
+  "name": "Physio Time Rehabilitation Centre",
+  "short_name": "Physio Time",
+  "description": "Best Physiotherapy Clinic in Sriperumbudur — stroke rehab, post-operative care, mobility & pain management by Dr. Gobinath S, BPT, MPT (Neuro).",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1246a0",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

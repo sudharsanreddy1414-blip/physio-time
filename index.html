@@ -822,6 +822,11 @@ footer strong{color:rgba(255,255,255,.8)}
   .rev-grid{grid-template-columns:repeat(2,1fr)}
   .pt-stats{grid-template-columns:repeat(2,1fr)}
 }
+@media(min-width:769px) and (max-width:900px){
+  .pt-sb{width:180px}
+  .pt-fg2{grid-template-columns:1fr}
+  .pt-content{padding:1.1rem}
+}
 @media(min-width:1600px){
   .container{max-width:1320px}
   .pt-panel{max-width:1180px}
@@ -1941,13 +1946,12 @@ function submitBooking() {
   5. Copy the firebaseConfig object it gives you and paste it below, replacing the placeholder values
 */
 var firebaseConfig = {
-  apiKey: "AIzaSyCcLws1OuBVaTOkIlSHJPTzzjIvINh1dbk",
-  authDomain: "physiotime-d667f.firebaseapp.com",
-  projectId: "physiotime-d667f",
-  storageBucket: "physiotime-d667f.firebasestorage.app",
-  messagingSenderId: "1093787107099",
-  appId: "1:1093787107099:web:8ec0292eb1f6a64be41dbe",
-  measurementId: "G-VFM19MNXCK"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
 firebase.initializeApp(firebaseConfig);
 var ptAuth = firebase.auth();

@@ -1017,6 +1017,7 @@ footer strong{color:rgba(255,255,255,.8)}
 .pt-lbox-logo{background:#fff!important;border:1.5px solid rgba(201,168,76,.3)!important}
 .staff-btn{background:#fff!important;border:2px solid rgba(201,168,76,.5)!important}
 </style>
+<link rel="stylesheet" href="/responsive.css"/>
 </head>
 <body>
 <main id="main-content">
@@ -1934,8 +1935,8 @@ function submitBooking() {
 })();
 </script>
 <!-- Firebase Authentication -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" crossorigin="anonymous"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js" crossorigin="anonymous"></script>
 <script type="text/javascript">
 /*
   ===== FIREBASE SETUP REQUIRED =====
@@ -1944,6 +1945,8 @@ function submitBooking() {
   3. Add your staff as users: Authentication → Users → Add user (email + password for each staff member)
   4. Go to Project Settings (gear icon) → General → scroll to "Your apps" → click the Web icon (</>) → register an app
   5. Copy the firebaseConfig object it gives you and paste it below, replacing the placeholder values
+  NOTE: until this is done with real values, the config below is a placeholder and login will not work —
+  this is expected and does not indicate a bug elsewhere on the site.
 */
 var firebaseConfig = {
   apiKey: "YOUR_API_KEY",
@@ -1953,8 +1956,15 @@ var firebaseConfig = {
   messagingSenderId: "YOUR_SENDER_ID",
   appId: "YOUR_APP_ID"
 };
-firebase.initializeApp(firebaseConfig);
-var ptAuth = firebase.auth();
+var ptAuth = null;
+var ptFirebaseReady = false;
+try {
+  firebase.initializeApp(firebaseConfig);
+  ptAuth = firebase.auth();
+  ptFirebaseReady = true;
+} catch (e) {
+  console.warn('Firebase not configured yet — replace the placeholder firebaseConfig values. Details:', e.message);
+}
 </script>
 <script type="text/javascript">
 
@@ -2055,6 +2065,7 @@ window.PT=(function(){
     var btn=document.getElementById('ptLoginBtn');
     var err=document.getElementById('ptErr');
     err.style.display='none';
+    if(!ptFirebaseReady){err.style.color='';err.textContent='❌ Staff login is not set up yet — Firebase configuration is still a placeholder.';err.style.display='block';return;}
     if(!u||!p){err.style.color='';err.textContent='❌ Enter email and password';err.style.display='block';return;}
     btn.disabled=true;btn.textContent='Logging in…';
     ptAuth.signInWithEmailAndPassword(u,p).catch(function(e){
@@ -2068,6 +2079,7 @@ window.PT=(function(){
   function resetPassword(){
     var u=document.getElementById('ptU').value.trim();
     var err=document.getElementById('ptErr');
+    if(!ptFirebaseReady){err.style.color='';err.textContent='❌ Staff login is not set up yet — Firebase configuration is still a placeholder.';err.style.display='block';return;}
     if(!u){err.style.color='';err.textContent='❌ Enter your email first, then click "Forgot password?"';err.style.display='block';return;}
     ptAuth.sendPasswordResetEmail(u).then(function(){
       err.style.color='#16a34a';
@@ -2080,24 +2092,27 @@ window.PT=(function(){
     });
   }
   function logout(){
+    if(!ptFirebaseReady){close();return;}
     ptAuth.signOut().then(function(){
       document.getElementById('ptP').value='';
       document.getElementById('ptErr').style.display='none';
       close();
     });
   }
-  ptAuth.onAuthStateChanged(function(user){
-    var btn=document.getElementById('ptLoginBtn');
-    if(btn){btn.disabled=false;btn.textContent='Login →';}
-    if(user){
-      document.getElementById('ptLogin').classList.remove('active');
-      document.getElementById('ptApp').classList.add('active');
-      dash();
-    } else {
-      document.getElementById('ptApp').classList.remove('active');
-      document.getElementById('ptLogin').classList.add('active');
-    }
-  });
+  if(ptFirebaseReady){
+    ptAuth.onAuthStateChanged(function(user){
+      var btn=document.getElementById('ptLoginBtn');
+      if(btn){btn.disabled=false;btn.textContent='Login →';}
+      if(user){
+        document.getElementById('ptLogin').classList.remove('active');
+        document.getElementById('ptApp').classList.add('active');
+        dash();
+      } else {
+        document.getElementById('ptApp').classList.remove('active');
+        document.getElementById('ptLogin').classList.add('active');
+      }
+    });
+  }
   function td(){return new Date().toISOString().split('T')[0]}
   function fd(d){
     if(!d)return'—';

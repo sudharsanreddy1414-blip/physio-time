@@ -27,19 +27,26 @@ img, svg, video, canvas, iframe { max-width: 100%; height: auto; }
    1. MARKETING SITE
    ============================================================ */
 
-/* --- Nav header --- */
+/* --- Nav header ---
+   FIX: previously targeted .mobile-menu-btn, a class that does
+   not exist in index.html (the real button is .hbg) — that rule
+   was dead code. The full show/hide + dropdown-panel behavior
+   for .hbg / .nav-links now lives in index.html's own
+   @media(max-width:900px) block so there's one definition, not
+   two files fighting over the same selector. This file just
+   hides the desktop-only CTA link on the same breakpoint. */
 @media (max-width: 900px) {
-  .nav-links { display: none; }
   .nav-cta { display: none; }
-}
-@media (min-width: 901px) {
-  .mobile-menu-btn { display: none; }
 }
 
 /* --- Hero --- */
 @media (max-width: 767px) {
+  /* FIX: #hero is display:grid (set in index.html), not flex —
+     flex-direction did nothing here before. Collapse the grid
+     to a single column instead, which is what was actually
+     needed and matches the rule below at 1024px. */
   #hero { padding: 84px 5% 56px; min-height: auto; }
-  .hero-inner { flex-direction: column; gap: 2rem; }
+  .hero-inner { grid-template-columns: 1fr; gap: 2rem; }
   h1.hh { font-size: clamp(1.85rem, 8vw, 2.6rem); }
   .hero-sub { max-width: 100%; font-size: .92rem; }
   .hero-btns { flex-direction: column; width: 100%; }
@@ -141,7 +148,11 @@ img, svg, video, canvas, iframe { max-width: 100%; height: auto; }
   .pt-topbar { padding: .55rem .85rem; }
 }
 
-/* --- Dashboard stat cards: 4 → 2 → compact 2 --- */
+/* --- Dashboard stat cards: 4 → 2 → compact 2 ---
+   FIX: this is now the single source of truth for .pt-stats at
+   every width (the conflicting 1-column rule inside index.html's
+   inline <style> at ≤480px has been removed), so the layout is
+   no longer dependent on load order / cascade tie-breaking. */
 @media (min-width: 1024px) {
   .pt-stats { grid-template-columns: repeat(4, 1fr); }
 }
@@ -229,4 +240,28 @@ img, svg, video, canvas, iframe { max-width: 100%; height: auto; }
 /* ---------- Reduced motion respected everywhere ---------- */
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+
+/* ============================================================
+   4. FIXES — mobile "shake"/jump + fixed-button overlap
+   ============================================================ */
+
+/* FIX: 100vh doesn't account for the mobile browser's collapsing
+   address bar, so the hero used to visibly resize/jump as the
+   page scrolled. 100dvh tracks the *actual* visible viewport;
+   100vh is kept as a fallback for older browsers. */
+@media (max-width: 767px) {
+  #hero { min-height: 100vh; min-height: 100dvh; }
+}
+
+/* FIX: wa-fab, staff-fab, sticky-call and btt were all pinned to
+   raw pixel offsets with no allowance for the iPhone home-indicator
+   safe area, so on notched devices they could crowd together or
+   sit flush against the gesture bar. env() falls back to 0 on
+   devices without a safe area, so this is a no-op elsewhere. */
+@media (max-width: 767px) {
+  .wa-fab { bottom: calc(24px + env(safe-area-inset-bottom)); }
+  .staff-fab { bottom: calc(24px + env(safe-area-inset-bottom)); }
+  .sticky-call { bottom: calc(24px + env(safe-area-inset-bottom)); }
+  .btt { bottom: calc(100px + env(safe-area-inset-bottom)); }
 }

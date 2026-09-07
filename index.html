@@ -780,11 +780,17 @@ footer strong{color:rgba(255,255,255,.8)}
   .about-grid,.hc-grid,.con-grid{grid-template-columns:1fr;gap:2.5rem}
   .doc-badge{right:0}
 }
-@media(max-width:768px){
+@media(max-width:900px){
+  /* Nav dropdown + hamburger toggle now share the same 900px
+     breakpoint as responsive.css's ".nav-links{display:none}"
+     rule, closing the 769–900px dead zone where the desktop
+     nav links vanished but the hamburger never appeared. */
   nav{padding:0 4%}
   .nav-links{display:none;flex-direction:column;position:absolute;top:66px;left:0;right:0;background:rgba(255,255,255,.98);padding:1.5rem 4%;gap:1rem;border-top:1px solid var(--border);box-shadow:0 8px 24px rgba(3,21,58,.1)}
   .nav-links.open{display:flex}
   .hbg{display:flex}
+}
+@media(max-width:768px){
   section{padding:66px 4%}
   .hero-inner{padding:0}
   .pt-stats{grid-template-columns:1fr 1fr;gap:.6rem}
@@ -812,7 +818,9 @@ footer strong{color:rgba(255,255,255,.8)}
 @media(max-width:480px){
   .hero-stats{flex-direction:column;gap:0}
   .hs-div{width:auto;height:1px}
-  .pt-stats{grid-template-columns:1fr}
+  /* .pt-stats layout at this breakpoint now lives solely in
+     responsive.css (2-col compact card layout) to avoid the
+     two files fighting over the same rule. */
   .hero-btns{flex-direction:column}
   .cta-btns{flex-direction:column;align-items:center}
 }
@@ -1059,7 +1067,7 @@ footer strong{color:rgba(255,255,255,.8)}
 
 <!-- ════ HERO ════ -->
 <section id="hero" style="padding:0">
-  <div id="hero" style="min-height:100vh;background:linear-gradient(145deg,var(--b900) 0%,var(--b700) 50%,var(--b600) 100%);display:flex;align-items:center;padding:90px 5% 70px;position:relative;overflow:hidden">
+  <div id="hero-inner-bg" style="min-height:100vh;background:linear-gradient(145deg,var(--b900) 0%,var(--b700) 50%,var(--b600) 100%);display:flex;align-items:center;padding:90px 5% 70px;position:relative;overflow:hidden">
     <div class="hero-dots"></div>
     <div class="hero-glow"></div>
     <div class="hero-glow2"></div>

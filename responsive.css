@@ -46,7 +46,7 @@ img, svg, video, canvas, iframe { max-width: 100%; height: auto; }
      to a single column instead, which is what was actually
      needed and matches the rule below at 1024px. */
   #hero { padding: 84px 5% 56px; min-height: auto; }
-  .hero-inner { grid-template-columns: 1fr; gap: 2rem; }
+  .hero-inner { gap: 2rem; }
   h1.hh { font-size: clamp(1.85rem, 8vw, 2.6rem); }
   .hero-sub { max-width: 100%; font-size: .92rem; }
   .hero-btns { flex-direction: column; width: 100%; }
@@ -102,11 +102,7 @@ img, svg, video, canvas, iframe { max-width: 100%; height: auto; }
 @media (min-width: 1024px) {
   .pt-sb { width: 220px; }
 }
-@media (min-width: 769px) and (max-width: 1023px) {
-  .pt-sb { width: 190px; }
-  .pt-content { padding: 1rem; }
-}
-@media (max-width: 768px) {
+@media (max-width: 1023px) {
   .pt-wrap { position: relative; overflow: hidden; }
   .pt-sb {
     position: fixed; top: 0; left: 0; height: 100%;
@@ -269,10 +265,28 @@ img, svg, video, canvas, iframe { max-width: 100%; height: auto; }
    to 24px/24px/100px — undoing the raise and letting the buttons
    crowd together right on top of the call bar. This block is now
    the single place that sets these offsets, combining the raised
-   base value with the safe-area inset instead of overwriting it. */
-@media (max-width: 767px) {
+   base value with the safe-area inset instead of overwriting it.
+
+   ROOT-CAUSE FIX 2: Staff used to sit fixed at bottom-left with its
+   own text label underneath, which is exactly where the hero's now
+   full-width mobile text lives — guaranteeing overlap with whatever
+   paragraph line happens to reach the bottom of the screen. Moving
+   it into the same right-hand stack as WhatsApp/Back-to-top (and
+   dropping its separate label so it's a compact icon like WhatsApp)
+   keeps every floating control on one side, leaving the rest of the
+   screen — including all hero content — genuinely clear. Threshold
+   widened to 1024px to match the hero's own single-column
+   breakpoint, since that's the range where this collision is
+   possible. Stack, bottom to top: Call bar (centered) → WhatsApp →
+   Staff → Back-to-top. */
+@media (max-width: 1024px) {
   .wa-fab { bottom: calc(80px + env(safe-area-inset-bottom)); }
-  .staff-fab { bottom: calc(80px + env(safe-area-inset-bottom)); }
+  .staff-fab {
+    left: auto;
+    right: 24px;
+    bottom: calc(144px + env(safe-area-inset-bottom));
+  }
+  .staff-lbl { display: none; }
   .sticky-call { bottom: calc(24px + env(safe-area-inset-bottom)); }
-  .btt { bottom: calc(140px + env(safe-area-inset-bottom)); }
+  .btt { bottom: calc(208px + env(safe-area-inset-bottom)); }
 }

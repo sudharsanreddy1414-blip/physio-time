@@ -290,3 +290,28 @@ img, svg, video, canvas, iframe { max-width: 100%; height: auto; }
   .sticky-call { bottom: calc(24px + env(safe-area-inset-bottom)); }
   .btt { bottom: calc(208px + env(safe-area-inset-bottom)); }
 }
+
+/* ============================================================
+   5. FIX — iOS Safari auto-zoom on form focus
+   ============================================================
+   ROOT CAUSE: every text input, select and textarea on the site
+   (staff portal patient/assessment forms, the search/filter bar,
+   the public booking form) renders at .75rem–.85rem (~12–14px).
+   iOS Safari auto-zooms the whole page in whenever a focused
+   field's font-size is under 16px, and — unlike a manual pinch —
+   that zoom does not reliably reset when the field loses focus.
+   That's the exact symptom reported: tapping into any field zooms
+   the page in, and afterward scrolling/viewing the dashboard stays
+   broken because the visual viewport is still zoomed. Raising
+   every form field to 16px removes the trigger entirely; no JS
+   viewport hacks or "user-scalable=no" (which would block
+   legitimate pinch-zoom for everyone) are needed. Scoped to
+   ≤1024px since this is a touch-device behavior; desktop form
+   sizing is untouched. */
+@media (max-width: 1024px) {
+  .pt-f input, .pt-f select, .pt-f textarea,
+  .pt-srch, .pt-select,
+  .bf input, .bf select, .bf textarea {
+    font-size: 16px;
+  }
+}

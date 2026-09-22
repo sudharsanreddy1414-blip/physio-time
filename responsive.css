@@ -258,10 +258,21 @@ img, svg, video, canvas, iframe { max-width: 100%; height: auto; }
    raw pixel offsets with no allowance for the iPhone home-indicator
    safe area, so on notched devices they could crowd together or
    sit flush against the gesture bar. env() falls back to 0 on
-   devices without a safe area, so this is a no-op elsewhere. */
+   devices without a safe area, so this is a no-op elsewhere.
+
+   ROOT-CAUSE FIX: on mobile, the sticky Call bar (bottom:24) sits
+   in the same row as WhatsApp/Staff unless those two are raised
+   clear of it, and Back-to-top must clear WhatsApp in turn. That
+   raise (80px / 80px / 140px) used to live in index.html's own
+   mobile media query, but this file loads after it and wins any
+   tie, so it was silently resetting all three straight back down
+   to 24px/24px/100px — undoing the raise and letting the buttons
+   crowd together right on top of the call bar. This block is now
+   the single place that sets these offsets, combining the raised
+   base value with the safe-area inset instead of overwriting it. */
 @media (max-width: 767px) {
-  .wa-fab { bottom: calc(24px + env(safe-area-inset-bottom)); }
-  .staff-fab { bottom: calc(24px + env(safe-area-inset-bottom)); }
+  .wa-fab { bottom: calc(80px + env(safe-area-inset-bottom)); }
+  .staff-fab { bottom: calc(80px + env(safe-area-inset-bottom)); }
   .sticky-call { bottom: calc(24px + env(safe-area-inset-bottom)); }
-  .btt { bottom: calc(100px + env(safe-area-inset-bottom)); }
+  .btt { bottom: calc(140px + env(safe-area-inset-bottom)); }
 }

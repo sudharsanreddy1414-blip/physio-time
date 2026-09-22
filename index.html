@@ -959,12 +959,9 @@ footer strong{color:rgba(255,255,255,.8)}
 .trust-item{display:flex;align-items:center;gap:.6rem;color:rgba(255,255,255,.6);font-size:.8rem;font-weight:500}
 .trust-item strong{color:var(--b300)}
 
-/* Enhanced mobile FAB cluster */
-@media(max-width:768px){
-  .wa-fab{bottom:80px}
-  .staff-fab{bottom:80px}
-  .btt{bottom:140px}
-}
+/* Enhanced mobile FAB cluster: positioning consolidated into
+   responsive.css (section 4) so there is a single source of
+   truth for these buttons on mobile — see comment there. */
 
 /* Animate number counters */
 @keyframes count-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -1009,7 +1006,6 @@ footer strong{color:rgba(255,255,255,.8)}
 .rev-source{display:flex;align-items:center;gap:.4rem;margin-top:.8rem;font-size:.7rem;color:var(--b400)}
 
 @media(max-width:768px){
-  .faq-grid{grid-template-columns:1fr}
   .book-grid{grid-template-columns:1fr}
   .bf-grid{grid-template-columns:1fr}
 }

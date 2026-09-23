@@ -107,6 +107,10 @@ img, svg, video, canvas, iframe { max-width: 100%; height: auto; }
   .pt-sb {
     position: fixed; top: 0; left: 0; height: 100%;
     z-index: 2500; width: min(86vw, 320px);
+    max-width: min(86vw, 320px); /* defensive cap: guards against
+      the sidebar rendering full-width regardless of cause */
+    box-sizing: border-box;
+    overflow-x: hidden;
     transform: translate3d(-100%, 0, 0);
     -webkit-transform: translate3d(-100%, 0, 0);
     transition: transform .25s ease;
@@ -114,6 +118,7 @@ img, svg, video, canvas, iframe { max-width: 100%; height: auto; }
     overflow-y: visible;
   }
   .pt-sb.open { transform: translate3d(0,0,0); -webkit-transform: translate3d(0,0,0); }
+  .pt-sb-nav, .pt-nitem { max-width: 100%; box-sizing: border-box; }
   .pt-hbg { display: inline-flex !important; }
   .pt-main { width: 100%; }
   .pt-content { padding: .9rem; }

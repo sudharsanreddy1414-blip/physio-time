@@ -216,7 +216,7 @@ img{max-width:100%;display:block}
 ::-webkit-scrollbar-thumb{background:var(--b500);border-radius:3px}
 
 /* ════ NAV ════ */
-nav{
+#mainNav{
   position:fixed;top:0;left:0;right:0;z-index:500;
   height:66px;display:flex;align-items:center;justify-content:space-between;
   padding:0 5%;
@@ -261,6 +261,7 @@ nav{
   padding:90px 5% 70px;
   position:relative;overflow:hidden;
 }
+#hero-inner-bg{flex:1 1 auto;width:100%}
 .hero-dots{display:none}
 .hero-glow3{
   position:absolute;top:35%;left:38%;
@@ -607,7 +608,7 @@ footer strong{color:rgba(255,255,255,.8)}
 /* ════ PORTAL ════ */
 .pt-overlay{position:fixed;top:0;right:0;bottom:0;left:0;width:100%;height:100%;z-index:1000;background:rgba(3,21,58,.55);display:none;align-items:stretch}
 .pt-overlay.open{display:flex}
-.pt-panel{width:100%;max-width:1060px;height:100vh;background:linear-gradient(175deg,#f7faff 0%,#eef4fd 55%,#e9f1fc 100%);display:flex;flex-direction:column;box-shadow:8px 0 50px rgba(3,21,58,.25)}
+.pt-panel{width:100%;max-width:none;height:100vh;background:linear-gradient(175deg,#f7faff 0%,#eef4fd 55%,#e9f1fc 100%);display:flex;flex-direction:column;box-shadow:8px 0 50px rgba(3,21,58,.25)}
 .pt-topbar{background:linear-gradient(135deg,var(--b900),var(--b800));padding:.8rem 1.3rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}
 .pt-topbar h2{font-size:.9rem;color:var(--white);font-weight:700;display:flex;align-items:center;gap:.6rem}
 .pt-topbar-logo{width:26px;height:26px;border-radius:50%;background:transparent;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -794,7 +795,7 @@ footer strong{color:rgba(255,255,255,.8)}
      breakpoint as responsive.css's ".nav-links{display:none}"
      rule, closing the 769–900px dead zone where the desktop
      nav links vanished but the hamburger never appeared. */
-  nav{padding:0 4%}
+  #mainNav{padding:0 4%}
   .nav-links{display:none;flex-direction:column;position:absolute;top:66px;left:0;right:0;background:rgba(255,255,255,.98);padding:1.5rem 4%;gap:1rem;border-top:1px solid var(--border);box-shadow:0 8px 24px rgba(3,21,58,.1)}
   .nav-links.open{display:flex}
   .hbg{display:flex}
@@ -854,11 +855,9 @@ footer strong{color:rgba(255,255,255,.8)}
 }
 @media(min-width:1600px){
   .container{max-width:1320px}
-  .pt-panel{max-width:1180px}
 }
 @media(min-width:2200px){
   .container{max-width:1440px}
-  .pt-panel{max-width:1280px}
   body{font-size:1.05rem}
 }
 
